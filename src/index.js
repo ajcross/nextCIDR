@@ -145,7 +145,15 @@ class CIDRForm extends React.Component {
 	copyCodeToClipboard = (resulttext) => {
 		navigator.clipboard.writeText(resulttext);
   	}
-        renderForm(cidrerror, prefixeserror) {
+        renderForm(cidr, prefixes) {
+		var cidrerror;
+		if (typeof cidr === "string") {
+			cidrerror=cidr;
+		}
+		var prefixeserror="";
+		if (prefixes.error()) {
+			prefixeserror=prefixes.error();
+		}
 		return (
 		<div>
         		<div className="form-group">
@@ -201,20 +209,16 @@ class CIDRForm extends React.Component {
 		);
 	}
   	render() {
-		var cidr = CIDR.parse(this.state.cidr);
-		var prefixes = new Prefixes();
-		var cidrerror;
-		var prefixeserror="";
+		var cidr;
+		var prefixes;
 		var resulterror;
-		prefixes.parse(this.state.prefixes);
 		var nextcidrs=[];
-		if (prefixes.error()) {
-			prefixeserror=prefixes.error();
-		}
-		if (typeof cidr === "string") {
-			cidrerror = cidr;
-		}
-		else {
+
+		cidr = CIDR.parse(this.state.cidr);
+		prefixes = new Prefixes();
+		prefixes.parse(this.state.prefixes);
+
+		if (typeof cidr !== "string") {
 			for (var i=0; i<prefixes.prefixes.length; i++) {
 				cidr=cidr.next(prefixes.prefixes[i]);
 				if (!cidr.error()) {
@@ -226,10 +230,9 @@ class CIDRForm extends React.Component {
 			}
 		}
 
-
     		return (
 			<div className="container">
-				{this.renderForm(cidrerror,prefixeserror)}
+				{this.renderForm(cidr,prefixes)}
 				{this.renderResult(nextcidrs, resulterror)}
 			</div>
     		);
