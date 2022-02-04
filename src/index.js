@@ -142,11 +142,7 @@ class CIDRForm extends React.Component {
 	handleChange(event) {
 		this.setState({[event.target.name]: event.target.value});
   	}
-	copyCodeToClipboard = () => {
-		var resulttext = "";
-		if (this.nextcidrs.length > 0) {
-			resulttext= this.nextcidrs.reduce ( (s1, s2) => {return (s1+"\n"+ s2)});
-		}
+	copyCodeToClipboard = (resulttext) => {
 		navigator.clipboard.writeText(resulttext);
   	}
         renderForm(cidrerror, prefixeserror) {
@@ -181,7 +177,12 @@ class CIDRForm extends React.Component {
 		</div>
 		);
 	}
-	renderResult(nextcidrslist, resulterror) {
+	renderResult(nextcidrs, nextcidrslist, resulterror)  {
+		var nextcidrstxt="";
+		var nextcidrslist = nextcidrs.map( (nextcidr) =>  {return (<li className="list-group-item" key={nextcidr.toString()}> {nextcidr.toString()} </li>);});
+		if (nextcidrs.length) {
+	        	var nextcidrstxt=nextcidrs.reduce ( (s1, s2) => {return (s1+"\n"+ s2)});
+		}
 		return(
 		<div>
        			<div>
@@ -192,7 +193,7 @@ class CIDRForm extends React.Component {
 			</div>
         		<div className="text-danger">{resulterror}</div>
         		<div>
-          			<button onClick={() => this.copyCodeToClipboard()}>
+          			<button onClick={() => this.copyCodeToClipboard(nextcidrstxt)}>
             			Copy to Clipboard
           			</button>
         		</div>
@@ -206,7 +207,7 @@ class CIDRForm extends React.Component {
 		var prefixeserror="";
 		var resulterror;
 		prefixes.parse(this.state.prefixes);
-		this.nextcidrs=[];
+		var nextcidrs=[];
 		if (prefixes.error()) {
 			prefixeserror=prefixes.error();
 		}
@@ -217,7 +218,7 @@ class CIDRForm extends React.Component {
 			for (var i=0; i<prefixes.prefixes.length; i++) {
 				cidr=cidr.next(prefixes.prefixes[i]);
 				if (!cidr.error()) {
-					this.nextcidrs.push(cidr);
+					nextcidrs.push(cidr);
 				}
 				else {
 					resulterror=cidr.error();
@@ -225,12 +226,11 @@ class CIDRForm extends React.Component {
 			}
 		}
 
-		var nextcidrslist = this.nextcidrs.map( (nextcidr) =>  {return (<li className="list-group-item" key={nextcidr.toString()}> {nextcidr.toString()} </li>);});
 
     		return (
 			<div className="container">
 				{this.renderForm(cidrerror,prefixeserror)}
-				{this.renderResult(nextcidrslist,resulterror)}
+				{this.renderResult(nextcidrs, resulterror)}
 			</div>
     		);
   	}
