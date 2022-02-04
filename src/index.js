@@ -185,28 +185,36 @@ class CIDRForm extends React.Component {
 		</div>
 		);
 	}
-	renderResult(nextcidrs, nextcidrslist, resulterror)  {
-		var nextcidrstxt="";
-		var nextcidrslist = nextcidrs.map( (nextcidr) =>  {return (<li className="list-group-item" key={nextcidr.toString()}> {nextcidr.toString()} </li>);});
-		if (nextcidrs.length) {
-	        	var nextcidrstxt=nextcidrs.reduce ( (s1, s2) => {return (s1+"\n"+ s2)});
-		}
-		return(
-		<div>
+	renderResult(nextcidrs, resulterror)  {
+		var results;
+		var resultserror = <div className="text-danger">{resulterror}</div>;
+		if (nextcidrs.length>0) {
+			var nextcidrstxt="";
+			var nextcidrslist = nextcidrs.map( (nextcidr) =>  {return (<li className="list-group-item" key={nextcidr.toString()}> {nextcidr.toString()} </li>);});
+			if (nextcidrs.length) {
+	        		nextcidrstxt=nextcidrs.reduce ( (s1, s2) => {return (s1+"\n"+ s2)});
+			}
+			var resultslist = 
        			<div>
 				<label htmlFor="next">
 					CIDRs:
 				</label>
 				<ul className="list-group" id="next"> {nextcidrslist}</ul>
-			</div>
-        		<div className="text-danger">{resulterror}</div>
+			</div>;
+
+
+			var copybutton = 
         		<div>
           			<button onClick={() => this.copyCodeToClipboard(nextcidrstxt)}>
             			Copy to Clipboard
           			</button>
-        		</div>
-		</div>
-		);
+        		</div>;
+			results = <div>{resultslist}{resultserror}{copybutton}</div>; 
+		}
+		else {
+			results = <div>{resultserror}</div>;
+		}
+		return (<div>{results}</div>);
 	}
   	render() {
 		var cidr;
