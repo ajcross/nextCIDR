@@ -149,19 +149,71 @@ class CIDRForm extends React.Component {
 		}
 		navigator.clipboard.writeText(resulttext);
   	}
-
+        renderForm(cidrerror, prefixeserror) {
+		return (
+		<div>
+        		<div className="form-group">
+				<label htmlFor="cidr">
+          				CIDR:
+        			</label>
+          			<input id="cidr" 
+				       className="form-control" 
+				       type="text" 
+				       name="cidr" 
+				       value={this.state.cidr} 
+				       onChange={this.handleChange} 
+		  	 	       autoComplete="off" />
+	                	<div className="text-danger">{cidrerror}</div>
+			</div>
+        		<div className="form-group">
+				<label htmlFor="prefixes">
+					Prefixes for next CIDRs:
+				</label>
+          			<input id="prefixes" 
+		                       className="form-control" 
+		                       type="text" 
+		                       name="prefixes" 
+		                       value={this.state.prefixes} 
+		                       onChange={this.handleChange} 
+		                       autoComplete="off"/>
+	                	<div className="text-danger">{prefixeserror}</div>
+			</div>
+		</div>
+		);
+	}
+	renderResult(nextcidrslist, resulterror) {
+		return(
+		<div>
+       			<div>
+				<label htmlFor="next">
+					CIDRs:
+				</label>
+				<ul className="list-group" id="next"> {nextcidrslist}</ul>
+			</div>
+        		<div className="text-danger">{resulterror}</div>
+        		<div>
+          			<button onClick={() => this.copyCodeToClipboard()}>
+            			Copy to Clipboard
+          			</button>
+        		</div>
+		</div>
+		);
+	}
   	render() {
 		var cidr = CIDR.parse(this.state.cidr);
 		var prefixes = new Prefixes();
+		var cidrerror;
+		var prefixeserror="";
+		var resulterror;
 		prefixes.parse(this.state.prefixes);
 		this.nextcidrs=[];
-		var cidrerror;
-		var prefixeserror;
-		var resulterror;
 		if (prefixes.error()) {
 			prefixeserror=prefixes.error();
 		}
-		if (typeof cidr !== "string") {
+		if (typeof cidr === "string") {
+			cidrerror = cidr;
+		}
+		else {
 			for (var i=0; i<prefixes.prefixes.length; i++) {
 				cidr=cidr.next(prefixes.prefixes[i]);
 				if (!cidr.error()) {
@@ -172,54 +224,13 @@ class CIDRForm extends React.Component {
 				}
 			}
 		}
-		else {
-			cidrerror = cidr;
-		}
 
-		var next = this.nextcidrs.map( (nextcidr) =>  {return (<li className="list-group-item" key={nextcidr.toString()}> {nextcidr.toString()} </li>);});
+		var nextcidrslist = this.nextcidrs.map( (nextcidr) =>  {return (<li className="list-group-item" key={nextcidr.toString()}> {nextcidr.toString()} </li>);});
 
     		return (
 			<div className="container">
-        			<div className="form-group">
-					<label htmlFor="cidr">
-          					CIDR:
-        				</label>
-          				<input id="cidr" 
-					       className="form-control" 
-					       type="text" 
-					       name="cidr" 
-					       value={this.state.cidr} 
-					       onChange={this.handleChange} 
-			  	 	       autoComplete="off" />
-		                	<div className="text-danger">{cidrerror}</div>
-				</div>
-        			<div className="form-group">
-				<label htmlFor="prefixes">
-					Prefixes for next CIDRs:
-				</label>
-          				<input id="prefixes" 
-			                       className="form-control" 
-			                       type="text" 
-			                       name="prefixes" 
-			                       value={this.state.prefixes} 
-			                       onChange={this.handleChange} 
-			                       autoComplete="off"/>
-		                	<div className="text-danger">{prefixeserror}</div>
-			</div>
-        			<div>
-				<label htmlFor="next">
-					CIDRs:
-				</label>
-				<ul
- className="list-group" id="next"> {next}</ul>
-				</div>
-		                <div className="text-danger">{resulterror}</div>
-			        <div>
-          <button onClick={() => this.copyCodeToClipboard()}>
-            Copy to Clipboard
-          </button>
-        </div>
-
+				{this.renderForm(cidrerror,prefixeserror)}
+				{this.renderResult(nextcidrslist,resulterror)}
 			</div>
     		);
   	}
