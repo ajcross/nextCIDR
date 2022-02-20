@@ -1,12 +1,12 @@
 {
   "files": {
     "main.css": "/nextCIDR/static/css/main.669f4a43.css",
-    "main.js": "/nextCIDR/static/js/main.b5f7a93d.js",
+    "main.js": "/nextCIDR/static/js/main.495e4e34.js",
     "index.html": "/nextCIDR/index.html",
-    "main.b5f7a93d.js.map": "/nextCIDR/static/js/main.b5f7a93d.js.map"
+    "main.495e4e34.js.map": "/nextCIDR/static/js/main.495e4e34.js.map"
   },
   "entrypoints": [
     "static/css/main.669f4a43.css",
-    "static/js/main.b5f7a93d.js"
+    "static/js/main.495e4e34.js"
   ]
 }
