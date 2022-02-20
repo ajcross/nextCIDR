@@ -136,7 +136,8 @@ class CIDRForm extends React.Component {
 		super(props);
 		this.state = {
 			"cidr": "10.0.0.0/16",
-			"prefixes": "28*2, 26, 24"};
+			"prefixes": "28*2, 26, 24",
+		        "type": "follow"};
 		this.handleChange = this.handleChange.bind(this);
 	}
 	handleChange(event) {
@@ -168,6 +169,21 @@ class CIDRForm extends React.Component {
 				       onChange={this.handleChange} 
 		  	 	       autoComplete="off" />
 	                	<div className="text-danger">{cidrerror}</div>
+			        <input type="radio" 
+			               value="follow" 
+			               id="follow"
+			               checked={this.state.type=="follow"} 
+			               onChange={this.handleChange} 
+			               name="type" />
+		                <label htmlFor="follow">follow</label>
+			        <input type="radio" 
+			               value="supernet" 
+			               id="supernet"
+			               checked={this.state.type=="supernet"} 
+                                       onChange={this.handleChange} 
+			               name="type" />
+		                <label htmlFor="supernet">supernet</label>
+
 			</div>
         		<div className="form-group">
 				<label htmlFor="prefixes">
@@ -226,8 +242,19 @@ class CIDRForm extends React.Component {
 		prefixes = new Prefixes();
 		prefixes.parse(this.state.prefixes);
 
-		if (typeof cidr !== "string") {
-			for (var i=0; i<prefixes.prefixes.length; i++) {
+		if (typeof cidr !== "string" && prefixes.prefixes.length > 0) {
+			var i=0;
+			if (this.state.type == "supernet") {
+				cidr=new CIDR(cidr.ip, prefixes.prefixes[0]);
+				if (!cidr.error()) {
+					nextcidrs.push(cidr);
+				}
+				else {
+					resulterror=cidr.error();
+				}
+				i=1;
+			}
+			for (; i<prefixes.prefixes.length; i++) {
 				cidr=cidr.next(prefixes.prefixes[i]);
 				if (!cidr.error()) {
 					nextcidrs.push(cidr);
