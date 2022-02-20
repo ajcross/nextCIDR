@@ -158,7 +158,7 @@ class CIDRForm extends React.Component {
 		return (
 		<div>
         		<div className="form-group">
-				<label htmlFor="cidr">
+				<label htmlFor="cidr" className="form-check-label">
           				CIDR:
         			</label>
           			<input id="cidr" 
@@ -169,24 +169,35 @@ class CIDRForm extends React.Component {
 				       onChange={this.handleChange} 
 		  	 	       autoComplete="off" />
 	                	<div className="text-danger">{cidrerror}</div>
+			<div className="form-check form-check-inline">
+
 			        <input type="radio" 
 			               value="follow" 
 			               id="follow"
+			               className="form-check-input"
 			               checked={this.state.type=="follow"} 
 			               onChange={this.handleChange} 
 			               name="type" />
-		                <label htmlFor="follow">follow</label>
+		                <label htmlFor="follow" className="form-check-label">
+			               follow
+			        </label>
+			</div>
+			<div className="form-check form-check-inline">
 			        <input type="radio" 
 			               value="supernet" 
 			               id="supernet"
+			               className="form-check-input"
 			               checked={this.state.type=="supernet"} 
                                        onChange={this.handleChange} 
 			               name="type" />
-		                <label htmlFor="supernet">supernet</label>
+		                <label htmlFor="supernet" className="form-check-label">
+			               supernet
+			        </label>
 
 			</div>
+			</div>
         		<div className="form-group">
-				<label htmlFor="prefixes">
+				<label htmlFor="prefixes" className="form-check-label">
 					Prefixes for next CIDRs:
 				</label>
           			<input id="prefixes" 
@@ -221,7 +232,7 @@ class CIDRForm extends React.Component {
 
 			var copybutton = 
         		<div>
-          			<button onClick={() => this.copyCodeToClipboard(nextcidrstxt)}>
+          			<button className="btn btn-primary" onClick={() => this.copyCodeToClipboard(nextcidrstxt)}>
             			Copy to Clipboard
           			</button>
         		</div>;
