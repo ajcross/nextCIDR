@@ -157,8 +157,8 @@ class CIDRForm extends React.Component {
 		}
 		return (
 		<div>
-        		<div className="form-group">
-				<label htmlFor="cidr" className="form-check-label">
+        		<div className="mb-2">
+				<label htmlFor="cidr" className="form-label">
           				CIDR:
         			</label>
           			<input id="cidr" 
@@ -169,7 +169,7 @@ class CIDRForm extends React.Component {
 				       onChange={this.handleChange} 
 		  	 	       autoComplete="off" />
 	                	<div className="text-danger">{cidrerror}</div>
-			<div className="form-check form-check-inline">
+			<div className="form-check form-check-inline mb-2">
 
 			        <input type="radio" 
 			               value="follow" 
@@ -184,20 +184,20 @@ class CIDRForm extends React.Component {
 			</div>
 			<div className="form-check form-check-inline">
 			        <input type="radio" 
-			               value="supernet" 
-			               id="supernet"
+			               value="subnet" 
+			               id="subnet"
 			               className="form-check-input"
-			               checked={this.state.type=="supernet"} 
+			               checked={this.state.type=="subnet"} 
                                        onChange={this.handleChange} 
 			               name="type" />
-		                <label htmlFor="supernet" className="form-check-label">
-			               supernet
+		                <label htmlFor="subnet" className="form-check-label">
+			               subnet
 			        </label>
 
 			</div>
 			</div>
-        		<div className="form-group">
-				<label htmlFor="prefixes" className="form-check-label">
+        		<div className="mb-3">
+				<label htmlFor="prefixes" className="form-label">
 					Prefixes for next CIDRs:
 				</label>
           			<input id="prefixes" 
@@ -222,19 +222,19 @@ class CIDRForm extends React.Component {
 	        		nextcidrstxt=nextcidrs.reduce ( (s1, s2) => {return (s1+"\n"+ s2)});
 			}
 			var resultslist = 
-       			<div>
-				<label htmlFor="next">
-					CIDRs:
+       			<div className="mt-3">
+				<label htmlFor="next" className="form-label">
+					Subnets CIDR:
 				</label>
 				<ul className="list-group" id="next"> {nextcidrslist}</ul>
 			</div>;
 
 
 			var copybutton = 
-        		<div>
-          			<button className="btn btn-primary" onClick={() => this.copyCodeToClipboard(nextcidrstxt)}>
-            			Copy to Clipboard
-          			</button>
+        		<div className="mt-1">
+			        <button type="button" className="btn btn-outline-primary align-top" onClick={() => this.copyCodeToClipboard(nextcidrstxt)}>
+                                   <i className="bi bi-clipboard align-top"></i> Copy
+                                </button>
         		</div>;
 			results = <div>{resultslist}{resultserror}{copybutton}</div>; 
 		}
@@ -255,7 +255,7 @@ class CIDRForm extends React.Component {
 
 		if (typeof cidr !== "string" && prefixes.prefixes.length > 0) {
 			var i=0;
-			if (this.state.type == "supernet") {
+			if (this.state.type == "subnet") {
 				cidr=new CIDR(cidr.ip, prefixes.prefixes[0]);
 				if (!cidr.error()) {
 					nextcidrs.push(cidr);
@@ -278,7 +278,11 @@ class CIDRForm extends React.Component {
 
     		return (
 			<div className="container">
-			        <h1> CIDR calculator </h1>
+			        <h1> 
+			           <div className="align-top d-inline-block">
+                                   <i className="bi bi-calculator"></i> 
+			           </div> <div className="align-bottom pt-2 d-inline-block">CIDR calculator </div>
+			        </h1>
 				<p> Just a CIDR calculator </p>
 
 				<p> You need to provide a first CIDR and a list of subnet sizes (prefixes), the calculator will print the list of the CIDRs following the first one </p>
