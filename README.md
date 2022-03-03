@@ -2,9 +2,7 @@
 
 Just a CIDR calculator
 
-You need to provide a first CIDR and a list of subnet sizes (prefixes), the calculator will print the list of the CIDRs following the first one
-
-<b>Tip:</b> if you want to partition a supernet in different subnets, introduce the supernet but setting the prefix to the first subnet, then introduce the rest of the prefixes. Let's say you have 10.0.0.0/16 and want to partition in 2 /24 and 2 /25. Introduce 10.0.0.0/24 as CIDR and 24, 25*2 as prefixes  
+Provide a first CIDR or a supernet CIDR and a list of subnet sizes (prefixes), the calculator will generate a list of CIDRs for the subnets 
 
 Runs on client, no server-side execution. 
 

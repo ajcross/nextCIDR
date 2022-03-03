@@ -78,6 +78,10 @@ class CIDR {
 		var mod = this.ip % 2**(32-n);
 		return new CIDR(this.ip - mod, n);
 	}
+	isSupernet(supercidr) {
+		var s = this.supernet(supercidr.prefix);
+		return (s.ip === supercidr.ip);
+	}
 	subnets(n) {
 		var snets = [];
 		const d = 2**(32-n);
@@ -163,7 +167,7 @@ class CIDRForm extends React.Component {
 			               value="first" 
 			               id="first"
 			               className="form-check-input"
-			               checked={this.state.type=="first"} 
+			               checked={this.state.type === "first"} 
 			               onChange={this.handleChange} 
 			               name="type" />
 		                <label htmlFor="first" className="form-check-label">
@@ -172,20 +176,17 @@ class CIDRForm extends React.Component {
 			</div>
 			<div className="form-check form-check-inline">
 			        <input type="radio" 
-			               value="subnet" 
-			               id="subnet"
+			               value="supernet" 
+			               id="supernet"
 			               className="form-check-input"
-			               checked={this.state.type=="subnet"} 
+			               checked={this.state.type === "supernet"} 
                                        onChange={this.handleChange} 
 			               name="type" />
-		                <label htmlFor="subnet" className="form-check-label">
-			               subnet
+		                <label htmlFor="supernet" className="form-check-label">
+			               supernet
 			        </label>
 			</div>
 			<div>
-				<label htmlFor="cidr" className="form-label">
-          				CIDR:
-        			</label>
           			<input id="cidr" 
 				       className="form-control" 
 				       type="text" 
@@ -250,12 +251,14 @@ class CIDRForm extends React.Component {
 		var nextcidrs=[];
 
 		cidr = CIDR.parse(this.state.cidr);
+		var supernet = CIDR.parse("0.0.0.0/0");
 		prefixes = new Prefixes();
 		prefixes.parse(this.state.prefixes);
 
 		if (typeof cidr !== "string" && prefixes.prefixes.length > 0) {
 			var i=0;
-			if (this.state.type == "subnet") {
+			if (this.state.type === "supernet") {
+				supernet = cidr;
 				cidr=new CIDR(cidr.ip, prefixes.prefixes[0]);
 				if (!cidr.error()) {
 					nextcidrs.push(cidr);
@@ -268,6 +271,10 @@ class CIDRForm extends React.Component {
 			for (; i<prefixes.prefixes.length; i++) {
 				cidr=cidr.next(prefixes.prefixes[i]);
 				if (!cidr.error()) {
+					if (!cidr.isSupernet(supernet)) {
+						resulterror = "no space on supernet for more subnets";
+						break;
+					}
 					nextcidrs.push(cidr);
 				}
 				else {
