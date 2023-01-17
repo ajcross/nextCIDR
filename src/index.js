@@ -3,6 +3,26 @@ import React from 'react';
 import ReactDOM from 'react-dom';
 import './index.css';
 
+class IP {
+	constructor(ip, prefix) {
+		this.ip = ip;
+	}
+	toString() {
+		var j = this.ip;
+		var s = "";
+		for (var i=3;i>=0;i--) {
+			var k 
+			k = Math.floor(j / (2**(8*i)));
+			j = j % (2**(8*i));
+ 			s += k;
+			if(i>0)
+				s += ".";
+		}
+		return s;
+	}
+
+	
+}
 class CIDR {
 	static ipv4 = '(?:(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\\.){3}(?:(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?))';
 	static prefix = '(?:3[0-2]|[0-2]?[0-9])';
@@ -34,16 +54,8 @@ class CIDR {
 		}
 	}
 	toString() {
-		var j = this.ip;
-		var s = "";
-		for (var i=3;i>=0;i--) {
-			var k 
-			k = Math.floor(j / (2**(8*i)));
-			j = j % (2**(8*i));
- 			s += k;
-			if(i>0)
-				s += ".";
-		}
+		var ip = new IP(this.ip)
+		var s = ip.toString();
 		s += "/"+this.prefix;
 		return s;
 	}
@@ -98,6 +110,13 @@ class CIDR {
 			const d = 2**(32-this.prefix);
 			return new CIDR(this.ip+d,n);
 		}
+	}
+	ipCount() {
+		return 2**(32-this.prefix)
+	}
+	broadcast() {
+		const d = 2**(32-this.prefix);
+		return new IP(this.ip+d-1);
 	}
 }
 class Prefixes {
@@ -195,8 +214,7 @@ class CIDRForm extends React.Component {
 				       onChange={this.handleChange} 
 		  	 	       autoComplete="off" />
 	                	<div className="text-danger">{cidrerror}</div>
-			</div>
-			</div>
+			</div> </div>
         		<div className="mb-3">
 				<label htmlFor="prefixes" className="form-label">
 					Prefixes for next CIDRs:
@@ -218,7 +236,9 @@ class CIDRForm extends React.Component {
 		var resultserror = <div className="text-danger">{resulterror}</div>;
 		if (nextcidrs.length>0) {
 			var nextcidrstxt="";
-			var nextcidrslist = nextcidrs.map( (nextcidr) =>  {return (<li className="list-group-item" key={nextcidr.toString()}> {nextcidr.toString()} </li>);});
+			var nextcidrslist = nextcidrs.map( (nextcidr) =>  {return (<li className="list-group-item" key={nextcidr.toString()}> {nextcidr.toString()} 
+				                                                                                                              <div>broadcast: {nextcidr.broadcast().toString()}</div>
+				                                                                                                              <div>ip count: {nextcidr.ipCount().toString()}</div></li>);});
 			if (nextcidrs.length) {
 	        		nextcidrstxt=nextcidrs.reduce ( (s1, s2) => {return (s1+"\n"+ s2)});
 			}
