@@ -7,7 +7,7 @@ Provide a first CIDR or a supernet CIDR and a list of subnet sizes (prefixes), t
 Runs on client, no server-side execution. 
 
 # Run
-This application is publicly available. Go to github pages or [here](https://ajcross.net/nextCIDR)
+This application is publicly available. Go to github pages or [here](https://ajcross.github.io/nextCIDR/)
 
 # Setup
 Developed using React
