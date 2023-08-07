@@ -221,7 +221,7 @@ class CIDRForm extends React.Component {
 			               onChange={this.handleChange} 
 			               name="type" />
 		                <label htmlFor="first" className="form-check-label">
-			               first
+			               start after
 			        </label>
 			</div>
 			<div className="form-check form-check-inline">
@@ -321,8 +321,8 @@ class CIDRForm extends React.Component {
 			  style={{
 				display: 'grid',
 			        gap: 2,
-			        gridTemplateColumns: 'repeat('+cols+',10px)',
-			        gridTemplateRows: 'repeat('+rows+',10px)',
+			        gridTemplateColumns: 'repeat('+cols+',9px)',
+			        gridTemplateRows: 'repeat('+rows+',9px)',
 			  }}>{r}</div>;
 	}
 
