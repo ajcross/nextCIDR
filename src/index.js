@@ -404,8 +404,8 @@ class CIDRForm extends React.Component {
 				}
 
 				cidrs = {"free": avail,
-					     "subnet": nextcidrs,
-					     "notusable": this.state.type==="first" ? [cidr] : []};
+					 "subnet": nextcidrs,
+					 "in-use": this.state.type==="first" ? [cidr] : []};
 
 			}
                 } 
