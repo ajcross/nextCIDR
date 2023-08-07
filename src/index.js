@@ -293,7 +293,7 @@ class CIDRForm extends React.Component {
 			var colEnd="span "+(w);
 			rows=Math.max(rows,rowStart+h);
 
-			return <><div
+			return <div
 			  key={cidr.toString()}
 			  id={cidr.toString()}
 			  className={cidr.type+' square'}
@@ -311,7 +311,7 @@ class CIDRForm extends React.Component {
                                 <div>ip count:&nbsp;{cidr.ipCount().toString()}</div>
                           </div>
 
-			</div></> });
+			</div> });
 		return <><div
 		          className='grid'
 			  style={{
