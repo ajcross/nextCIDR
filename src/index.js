@@ -91,6 +91,9 @@ class CIDR {
 		return new CIDR(this.ip - mod, n);
 	}
 	isSupernet(supercidr) {
+		if (supercidr.prefix > this.prefix) {
+			return false;
+		}
 		var s = this.supernet(supercidr.prefix);
 		return (s.ip === supercidr.ip);
 	}
@@ -276,8 +279,7 @@ class CIDRForm extends React.Component {
 
                 var maxprefix=cidrs.reduce((accumulador, cidr)=> Math.max(accumulador,cidr.prefix),0);
 		var minip = cidrs.reduce((accumulador, cidr)=> Math.min(accumulador, cidr.ip),cidrs[0].ip);
-		var ip0 = new CIDR(minip,32);
-		ip0 = ip0.supernet(maxprefix-logCols);
+		var ip0 = new CIDR(minip,32).supernet(maxprefix-logCols);
 
 		var r=cidrs.map( (cidr) => {
 			var color='blue'; 
@@ -371,26 +373,21 @@ class CIDRForm extends React.Component {
 
 		if (typeof cidr !== "string" && prefixes.prefixes.length > 0) {
 			var i=0;
-			var subnet;
-			if (this.state.type === "supernet") {
-				subnet=new CIDR(cidr.ip, prefixes.prefixes[0]);
-				if (!subnet.error()) {
-					nextcidrs.push(subnet);
+			var subnet=cidr;
+
+			for (i=0; i<prefixes.prefixes.length; i++) {
+				if (i===0 && this.state.type === "supernet") {
+				    	subnet=new CIDR(cidr.ip, 32).supernet(prefixes.prefixes[0]);
 				}
 				else {
-					resulterror=subnet.error();
+					subnet=subnet.next(prefixes.prefixes[i]);
 				}
-				i=1;
-			} else {
-				subnet=cidr;
-			}
-			for (; i<prefixes.prefixes.length; i++) {
-				subnet=subnet.next(prefixes.prefixes[i]);
 				if (!subnet.error()) {
 					if (this.state.type === "supernet" && !subnet.isSupernet(cidr)) {
 						resulterror = "no space on supernet for more subnets";
 						break;
 					}
+
 					nextcidrs.push(subnet);
 				}
 				else {
