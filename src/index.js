@@ -281,7 +281,7 @@ class CIDRForm extends React.Component {
 		var minip = cidrs.reduce((accumulador, cidr)=> Math.min(accumulador, cidr.ip),cidrs[0].ip);
 		var ip0 = new CIDR(minip,32).supernet(maxprefix-logCols);
 
-		var r=cidrs.map( (cidr) => {
+		var squares=cidrs.map( (cidr) => {
 			
 			var pos= (cidr.ip-ip0.ip)/2**(32-maxprefix);
 			var units=2**(maxprefix-cidr.prefix);
@@ -300,22 +300,32 @@ class CIDRForm extends React.Component {
 			var colEnd="span "+(w);
 			rows=Math.max(rows,rowStart+h);
 
-			return <div
+			return <><div
 			  key={cidr.toString()}
-			  className={cidr.type}
+			  id={cidr.toString()}
+			  className={cidr.type+' square'}
 			  style={{
 			        gridRowStart: rowStart,
 			        gridRowEnd: rowEnd,
 				gridColumnStart: colStart,
 			        gridColumnEnd: colEnd,
 			  }}
-			  ></div>});
-		return <div
+			  ><div 
+			     className="p-1"
+			     key={cidr.toString()}>
+				{cidr.type}&nbsp;{cidr.toString()}
+                                <div>broadcast:&nbsp;{cidr.broadcast().toString()}</div>
+                                <div>ip count:&nbsp;{cidr.ipCount().toString()}</div>
+                          </div>
+
+			</div></> });
+		return <><div
 		          className='grid'
 			  style={{
 			        gridTemplateColumns: 'repeat('+cols+',9px)',
 			        gridTemplateRows: 'repeat('+rows+',9px)',
-			  }}>{r}</div>;
+			  }}>{squares}</div>
+			  </>;
 	}
 
 	renderResult(nextcidrs, resulterror)  {
@@ -326,9 +336,8 @@ class CIDRForm extends React.Component {
 			var nextcidrslist = nextcidrs.map( (nextcidr) =>  {return (<li className="list-group-item" key={nextcidr.toString()}> {nextcidr.toString()} 
 				                                                                                                              <div>broadcast: {nextcidr.broadcast().toString()}</div>
 				                                                                                                              <div>ip count: {nextcidr.ipCount().toString()}</div></li>);});
-			if (nextcidrs.length) {
-	        		nextcidrstxt=nextcidrs.reduce ( (s1, s2) => {return (s1+"\n"+ s2)});
-			}
+	        	nextcidrstxt=nextcidrs.reduce ( (s1, s2) => {return (s1+"\n"+ s2)});
+			
 			var resultslist = 
        			<div className="mt-3">
 				<label htmlFor="next" className="form-label">
