@@ -6,7 +6,7 @@
 div.free {
 	background-color: lightgray;
 }
-div.notusable {
+div.in-use {
 	background-color: black;
 }
 div.subnet {
