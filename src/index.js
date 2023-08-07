@@ -333,9 +333,13 @@ class CIDRForm extends React.Component {
 		var resultserror = <div className="text-danger">{resulterror}</div>;
 		if (nextcidrs.length>0) {
 			var nextcidrstxt="";
-			var nextcidrslist = nextcidrs.map( (nextcidr) =>  {return (<li className="list-group-item" key={nextcidr.toString()}> {nextcidr.toString()} 
-				                                                                                                              <div>broadcast: {nextcidr.broadcast().toString()}</div>
-				                                                                                                              <div>ip count: {nextcidr.ipCount().toString()}</div></li>);});
+			var nextcidrslist = nextcidrs.map( (nextcidr) =>  { return (
+				<li className="list-group-item" 
+				    key={nextcidr.toString()}> {nextcidr.toString()} 
+				  <div>broadcast: {nextcidr.broadcast().toString()}</div>
+				  <div>ip count: {nextcidr.ipCount().toString()}</div>
+				</li>);
+			});
 	        	nextcidrstxt=nextcidrs.reduce ( (s1, s2) => {return (s1+"\n"+ s2)});
 			
 			var resultslist = 
