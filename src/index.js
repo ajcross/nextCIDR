@@ -282,13 +282,6 @@ class CIDRForm extends React.Component {
 		var ip0 = new CIDR(minip,32).supernet(maxprefix-logCols);
 
 		var r=cidrs.map( (cidr) => {
-			var color='blue'; 
-			if (cidr.type === "available") {
-				color='lightgray';
-			}
-			if (cidr.type === "busy") {
-				color='black';
-			}
 			
 			var pos= (cidr.ip-ip0.ip)/2**(32-maxprefix);
 			var units=2**(maxprefix-cidr.prefix);
@@ -309,8 +302,8 @@ class CIDRForm extends React.Component {
 
 			return <div
 			  key={cidr.toString()}
+			  className={cidr.type}
 			  style={{
-				backgroundColor: color, 
 			        gridRowStart: rowStart,
 			        gridRowEnd: rowEnd,
 				gridColumnStart: colStart,
@@ -318,9 +311,8 @@ class CIDRForm extends React.Component {
 			  }}
 			  ></div>});
 		return <div
+		          className='grid'
 			  style={{
-				display: 'grid',
-			        gap: 2,
 			        gridTemplateColumns: 'repeat('+cols+',9px)',
 			        gridTemplateRows: 'repeat('+rows+',9px)',
 			  }}>{r}</div>;
@@ -405,9 +397,9 @@ class CIDRForm extends React.Component {
 			      		avail=avail.concat(CIDR.diff(nextcidrs[nextcidrs.length-1],cidr.next(32)));
 				}
 
-				cidrs = {"available": avail,
-					     "assigned": nextcidrs,
-					     "busy": this.state.type==="first" ? [cidr] : []};
+				cidrs = {"free": avail,
+					     "subnet": nextcidrs,
+					     "notusable": this.state.type==="first" ? [cidr] : []};
 
 			}
                 } 
