@@ -285,15 +285,8 @@ class CIDRForm extends React.Component {
 			
 			var pos= (cidr.ip-ip0.ip)/2**(32-maxprefix);
 			var units=2**(maxprefix-cidr.prefix);
-			var w,h;
-			if(units>cols) {
-				w=cols;
-				h=Math.floor(units/cols);
-			} 
-			else {
-				w=units;
-				h=1;
-			}
+			var w= (units-1)%cols+1;
+		        var h=Math.floor(units/cols);
 			var rowStart=Math.floor(pos/32)+1;
 			var rowEnd="span "+(h);
 			var colStart=pos%32+1;
