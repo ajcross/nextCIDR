@@ -118,6 +118,34 @@ class CIDR {
 		const d = 2**(32-this.prefix);
 		return new IP(this.ip+d-1);
 	}
+	static diff(cidr1, cidr2) {
+		if (cidr1.ip >= cidr2.ip) {
+			return []
+		}
+		else {
+		   var n = null;
+		   var s = cidr1.next(cidr1.prefix);
+		   for (var i=cidr1.prefix-1;i>=0;i--) {
+			   if (cidr1.isSupernet(s) || cidr2.isSupernet(s)) 
+				   break;
+			   n = s;
+			   s = n.supernet(i);
+		   }
+		   if (n == null) {
+			   return [];
+		   }
+		   else {
+			   return [n].concat(CIDR.diff(n,cidr2))
+	           }
+		}
+	}
+	static available(cidrs) {
+		var avail=[];
+		for(var i=0;i<cidrs.length-1;i++) {
+			avail=avail.concat(CIDR.diff(cidrs[i],cidrs[i+1]));
+		}
+		return avail;
+	}
 }
 class Prefixes {
 	constructor (prefixes) {
@@ -160,7 +188,7 @@ class CIDRForm extends React.Component {
 		this.state = {
 			"cidr": "10.0.0.0/16",
 			"prefixes": "28*2, 26, 24",
-		        "type": "first"};
+		        "type": "supernet"};
 		this.handleChange = this.handleChange.bind(this);
 	}
 	handleChange(event) {
@@ -231,6 +259,71 @@ class CIDRForm extends React.Component {
 		</div>
 		);
 	}
+	renderGrid(cidrsdict)  {
+		var rows = 0;
+		var logCols = 5; 
+
+		var cols = 2**logCols;
+                var cidrs =[];
+		// join the cidrs in a single array adding a type 
+		for (const [key, value] of Object.entries(cidrsdict)) {
+			cidrs = cidrs.concat(value.map( (cidr) => {cidr.type=key; return cidr}));
+		}
+
+		if (cidrs.length===0) {
+			return;
+		}
+
+                var maxprefix=cidrs.reduce((accumulador, cidr)=> Math.max(accumulador,cidr.prefix),0);
+		var minip = cidrs.reduce((accumulador, cidr)=> Math.min(accumulador, cidr.ip),cidrs[0].ip);
+		var ip0 = new CIDR(minip,32);
+		ip0 = ip0.supernet(maxprefix-logCols);
+
+		var r=cidrs.map( (cidr) => {
+			var color='blue'; 
+			if (cidr.type === "available") {
+				color='lightgray';
+			}
+			if (cidr.type === "busy") {
+				color='black';
+			}
+			
+			var pos= (cidr.ip-ip0.ip)/2**(32-maxprefix);
+			var units=2**(maxprefix-cidr.prefix);
+			var w,h;
+			if(units>cols) {
+				w=cols;
+				h=Math.floor(units/cols);
+			} 
+			else {
+				w=units;
+				h=1;
+			}
+			var rowStart=Math.floor(pos/32)+1;
+			var rowEnd="span "+(h);
+			var colStart=pos%32+1;
+			var colEnd="span "+(w);
+			rows=Math.max(rows,rowStart+h);
+
+			return <div
+			  key={cidr.toString()}
+			  style={{
+				backgroundColor: color, 
+			        gridRowStart: rowStart,
+			        gridRowEnd: rowEnd,
+				gridColumnStart: colStart,
+			        gridColumnEnd: colEnd,
+			  }}
+			  ></div>});
+		return <div
+			  style={{
+				display: 'grid',
+			        gap: 2,
+			        gridTemplateColumns: 'repeat('+cols+',10px)',
+			        gridTemplateRows: 'repeat('+rows+',10px)',
+			  }}>{r}</div>;
+	}
+
 	renderResult(nextcidrs, resulterror)  {
 		var results;
 		var resultserror = <div className="text-danger">{resulterror}</div>;
@@ -247,7 +340,7 @@ class CIDRForm extends React.Component {
 				<label htmlFor="next" className="form-label">
 					Subnets CIDR:
 				</label>
-				<ul className="list-group" id="next"> {nextcidrslist}</ul>
+				<ul className="list-group" id="next2"> {nextcidrslist}</ul>
 			</div>;
 
 
@@ -271,38 +364,56 @@ class CIDRForm extends React.Component {
 		var nextcidrs=[];
 
 		cidr = CIDR.parse(this.state.cidr);
-		var supernet = CIDR.parse("0.0.0.0/0");
 		prefixes = new Prefixes();
 		prefixes.parse(this.state.prefixes);
+		var avail=[];
+		var cidrs={};
 
 		if (typeof cidr !== "string" && prefixes.prefixes.length > 0) {
 			var i=0;
+			var subnet;
 			if (this.state.type === "supernet") {
-				supernet = cidr;
-				cidr=new CIDR(cidr.ip, prefixes.prefixes[0]);
-				if (!cidr.error()) {
-					nextcidrs.push(cidr);
+				subnet=new CIDR(cidr.ip, prefixes.prefixes[0]);
+				if (!subnet.error()) {
+					nextcidrs.push(subnet);
 				}
 				else {
-					resulterror=cidr.error();
+					resulterror=subnet.error();
 				}
 				i=1;
+			} else {
+				subnet=cidr;
 			}
 			for (; i<prefixes.prefixes.length; i++) {
-				cidr=cidr.next(prefixes.prefixes[i]);
-				if (!cidr.error()) {
-					if (!cidr.isSupernet(supernet)) {
+				subnet=subnet.next(prefixes.prefixes[i]);
+				if (!subnet.error()) {
+					if (this.state.type === "supernet" && !subnet.isSupernet(cidr)) {
 						resulterror = "no space on supernet for more subnets";
 						break;
 					}
-					nextcidrs.push(cidr);
+					nextcidrs.push(subnet);
 				}
 				else {
-					resulterror=cidr.error();
+					resulterror=subnet.error();
 				}
 			}
-		}
+			if (nextcidrs.length>0) {
+				if (this.state.type === "first") {
+			      		avail=avail.concat(CIDR.diff(cidr,nextcidrs[0]));
+				}
+                        	for(var j=0;j<nextcidrs.length-1;j++) {
+                              		avail=avail.concat(CIDR.diff(nextcidrs[j],nextcidrs[j+1]));
+                        	} 
+				if (this.state.type === "supernet") {
+			      		avail=avail.concat(CIDR.diff(nextcidrs[nextcidrs.length-1],cidr.next(32)));
+				}
 
+				cidrs = {"available": avail,
+					     "assigned": nextcidrs,
+					     "busy": this.state.type==="first" ? [cidr] : []};
+
+			}
+                } 
     		return (
 			<div className="container">
 			        <h1> 
@@ -318,6 +429,7 @@ class CIDRForm extends React.Component {
 
 
 				{this.renderForm(cidr,prefixes)}
+			        {this.renderGrid(cidrs)}
 				{this.renderResult(nextcidrs, resulterror)}
 			</div>
     		);
