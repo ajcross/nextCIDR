@@ -189,8 +189,8 @@ class CIDRForm extends React.Component {
 	constructor(props) {
 		super(props);
 		this.state = {
-			"cidr": "10.0.0.0/16",
-			"prefixes": "28*2, 26, 24",
+			"cidr": "10.0.0.0/22",
+			"prefixes": "28*3, 26, 24, 23",
 		        "type": "supernet"};
 		this.handleChange = this.handleChange.bind(this);
 	}
@@ -352,7 +352,7 @@ class CIDRForm extends React.Component {
                                    <i className="bi bi-clipboard align-top"></i> Copy
                                 </button>
         		</div>;
-			results = <div>{resultslist}{resultserror}{copybutton}</div>; 
+			results = <div>{resultserror}{resultslist}{resultserror}{copybutton}</div>; 
 		}
 		else {
 			results = <div>{resultserror}</div>;
@@ -384,7 +384,7 @@ class CIDRForm extends React.Component {
 				}
 				if (!subnet.error()) {
 					if (this.state.type === "supernet" && !subnet.isSupernet(cidr)) {
-						resulterror = "no space on supernet for more subnets";
+						resulterror = "no space on supernet for all subnets";
 						break;
 					}
 
