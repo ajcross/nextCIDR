@@ -266,7 +266,17 @@ class CIDRForm extends React.Component {
 		</div>
 		);
 	}
-	renderSquare(cidr,rowStart,rowEnd,colStart,colEnd,cidrtype) {
+	renderSquare(cidr,maxprefix, cols, ip0) {
+
+		var pos = (cidr.ip-ip0.ip)/2**(32-maxprefix);
+		var units = 2**(maxprefix-cidr.prefix);
+		var w = (units-1)%cols+1;
+	        var h = Math.floor(units/cols);
+		var rowStart=Math.floor(pos/32)+1;
+		var rowEnd="span "+(h);
+		var colStart=pos%32+1;
+		var colEnd="span "+(w);
+
   		const renderTooltip = (props) => (
     			<Tooltip id="button-tooltip" {...props}>
 				{cidr.type} {cidr.toString()}
@@ -282,23 +292,18 @@ class CIDRForm extends React.Component {
       			overlay={renderTooltip}
     		>
 			<div
-			  key={cidr.toString()}
 			  id={cidr.toString()}
-			  className={cidrtype+' square'}
+			  className={cidr.type+' square'}
 			  style={{
 			        gridRowStart: rowStart,
 			        gridRowEnd: rowEnd,
 				gridColumnStart: colStart,
 			        gridColumnEnd: colEnd,
-			  }}
-			  >
-
-			</div> 
+			  }} />
     		</OverlayTrigger>
   		);
 	}
 	renderGrid(cidrsdict)  {
-		var rows = 0;
 		var logCols = 5; 
 
 		var cols = 2**logCols;
@@ -317,23 +322,12 @@ class CIDRForm extends React.Component {
 		var ip0 = new CIDR(minip,32).supernet(maxprefix-logCols);
 
 		var squares=cidrs.map( (cidr) => {
-			
-			var pos= (cidr.ip-ip0.ip)/2**(32-maxprefix);
-			var units=2**(maxprefix-cidr.prefix);
-			var w= (units-1)%cols+1;
-		        var h=Math.floor(units/cols);
-			var rowStart=Math.floor(pos/32)+1;
-			var rowEnd="span "+(h);
-			var colStart=pos%32+1;
-			var colEnd="span "+(w);
-			rows=Math.max(rows,rowStart+h);
-
-			return this.renderSquare(cidr,rowStart,rowEnd,colStart,colEnd,cidr.type)});
+			return this.renderSquare(cidr, maxprefix, cols, ip0)});
 		return <><div
 		          className='grid'
 			  style={{
 			        gridTemplateColumns: 'repeat('+cols+',9px)',
-			        gridTemplateRows: 'repeat('+rows+',9px)',
+			        gridAutoRows: '9px'
 			  }}>{squares}</div>
 			  </>;
 	}
