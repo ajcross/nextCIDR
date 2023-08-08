@@ -12,6 +12,9 @@ div.in-use {
 div.subnet {
 	background-color: blue;
 }
+div.out-of {
+	background-color: red;
+}
 
 div.grid {
         display: grid;
