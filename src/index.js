@@ -2,6 +2,10 @@
 import React from 'react';
 import ReactDOM from 'react-dom';
 import './index.css';
+import Tooltip from 'react-bootstrap/Tooltip';
+import OverlayTrigger from 'react-bootstrap/OverlayTrigger';
+
+
 
 class IP {
 	constructor(ip, prefix) {
@@ -262,6 +266,37 @@ class CIDRForm extends React.Component {
 		</div>
 		);
 	}
+	renderSquare(cidr,rowStart,rowEnd,colStart,colEnd,cidrtype) {
+  		const renderTooltip = (props) => (
+    			<Tooltip id="button-tooltip" {...props}>
+				{cidr.type} {cidr.toString()}
+                                <div>ip count: {cidr.ipCount().toString()}</div>
+    			</Tooltip>
+  		);
+
+  		return (
+    		<OverlayTrigger
+			key={cidr.toString()}
+      			placement="right"
+      			delay={{ show: 150, hide: 100 }}
+      			overlay={renderTooltip}
+    		>
+			<div
+			  key={cidr.toString()}
+			  id={cidr.toString()}
+			  className={cidrtype+' square'}
+			  style={{
+			        gridRowStart: rowStart,
+			        gridRowEnd: rowEnd,
+				gridColumnStart: colStart,
+			        gridColumnEnd: colEnd,
+			  }}
+			  >
+
+			</div> 
+    		</OverlayTrigger>
+  		);
+	}
 	renderGrid(cidrsdict)  {
 		var rows = 0;
 		var logCols = 5; 
@@ -293,25 +328,7 @@ class CIDRForm extends React.Component {
 			var colEnd="span "+(w);
 			rows=Math.max(rows,rowStart+h);
 
-			return <div
-			  key={cidr.toString()}
-			  id={cidr.toString()}
-			  className={cidr.type+' square'}
-			  style={{
-			        gridRowStart: rowStart,
-			        gridRowEnd: rowEnd,
-				gridColumnStart: colStart,
-			        gridColumnEnd: colEnd,
-			  }}
-			  ><div 
-			     className="p-1"
-			     key={cidr.toString()}>
-				{cidr.type}&nbsp;{cidr.toString()}
-                                <div>broadcast:&nbsp;{cidr.broadcast().toString()}</div>
-                                <div>ip count:&nbsp;{cidr.ipCount().toString()}</div>
-                          </div>
-
-			</div> });
+			return this.renderSquare(cidr,rowStart,rowEnd,colStart,colEnd,cidr.type)});
 		return <><div
 		          className='grid'
 			  style={{

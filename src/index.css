@@ -17,17 +17,3 @@ div.grid {
         display: grid;
         gap: 2px;
 }
-div.square > div {
-	display: none;
-}
-div.square:hover > div{
-	width: fit-content;
-	display: block;
-	position: relative;
-        top: 0px; left: 15px;
-	background:#f8f8f8; 
-	z-index: 10000;
-}
-div.square:hover > div > div  {
-	width: fit-content;
-}
