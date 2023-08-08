@@ -321,8 +321,7 @@ class CIDRForm extends React.Component {
 		var minip = cidrs.reduce((accumulador, cidr)=> Math.min(accumulador, cidr.ip),cidrs[0].ip);
 		var ip0 = new CIDR(minip,32).supernet(maxprefix-logCols);
 
-		var squares=cidrs.map( (cidr) => {
-			return this.renderSquare(cidr, maxprefix, cols, ip0)});
+		var squares=cidrs.map( (cidr) => this.renderSquare(cidr, maxprefix, cols, ip0));
 		return <div className='grid'>
 			     {squares}</div> ;
 	}
@@ -332,14 +331,14 @@ class CIDRForm extends React.Component {
 		var resultserror = <div className="text-danger">{resulterror}</div>;
 		if (nextcidrs.length>0) {
 			var nextcidrstxt="";
-			var nextcidrslist = nextcidrs.map( (nextcidr) =>  { return (
+			var nextcidrslist = nextcidrs.map( (nextcidr) =>  (
 				<li className="list-group-item" 
 				    key={nextcidr.toString()}> {nextcidr.toString()} 
 				  <div>broadcast: {nextcidr.broadcast().toString()}</div>
 				  <div>ip count: {nextcidr.ipCount().toString()}</div>
-				</li>);
-			});
-	        	nextcidrstxt=nextcidrs.reduce ( (s1, s2) => {return (s1+"\n"+ s2)});
+				</li>)
+			);
+	        	nextcidrstxt=nextcidrs.reduce ( (s1, s2) => (s1+"\n"+ s2));
 			
 			var resultslist = 
        			<div className="mt-3">
@@ -412,7 +411,6 @@ class CIDRForm extends React.Component {
 				cidrs = {"free": avail,
 					 "subnet": nextcidrs,
 					 "in-use": this.state.type==="first" ? [cidr] : []};
-
 			}
                 } 
     		return (
