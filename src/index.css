@@ -16,4 +16,6 @@ div.subnet {
 div.grid {
         display: grid;
         gap: 2px;
+	grid-auto-columns: 9px;
+	grid-auto-rows: 9px;
 }

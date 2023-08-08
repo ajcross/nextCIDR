@@ -323,13 +323,8 @@ class CIDRForm extends React.Component {
 
 		var squares=cidrs.map( (cidr) => {
 			return this.renderSquare(cidr, maxprefix, cols, ip0)});
-		return <><div
-		          className='grid'
-			  style={{
-			        gridTemplateColumns: 'repeat('+cols+',9px)',
-			        gridAutoRows: '9px'
-			  }}>{squares}</div>
-			  </>;
+		return <div className='grid'>
+			     {squares}</div> ;
 	}
 
 	renderResult(nextcidrs, resulterror)  {
