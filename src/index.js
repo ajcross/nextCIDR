@@ -272,11 +272,11 @@ class CIDRForm extends React.Component {
 		var units = 2**(maxprefix-cidr.prefix);
 		var w = (units-1)%cols+1;
 	        var h = Math.floor(units/cols);
-		var rowStart=Math.floor(pos/32)+1;
+		var rowStart=Math.floor(pos/cols)+1;
 		var rowEnd="span "+(h);
-		var colStart=pos%32+1;
+		var colStart=pos%cols+1;
 		var colEnd="span "+(w);
-
+                //console.log(cidr.toString()+ " pos "+ pos + " rowStart:"+rowStart+" rowEnd:"+rowEnd+" colStart: "+colStart+" colEnd: "+colEnd);
   		const renderTooltip = (props) => (
     			<Tooltip id="button-tooltip" {...props}>
 				{cidr.type} {cidr.toString()}
@@ -304,7 +304,7 @@ class CIDRForm extends React.Component {
   		);
 	}
 	renderGrid(cidrsdict)  {
-		var logCols = 5; 
+		var logCols = 5; //needs to be a power of 2
 
 		var cols = 2**logCols;
                 var cidrs =[];
