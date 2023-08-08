@@ -366,7 +366,8 @@ class CIDRForm extends React.Component {
 		var cidr;
 		var prefixes;
 		var resulterror;
-		var nextcidrs=[];
+		var subnets=[];
+		var outof=[];
 
 		cidr = CIDR.parse(this.state.cidr);
 		prefixes = new Prefixes();
@@ -387,31 +388,42 @@ class CIDRForm extends React.Component {
 				}
 				if (!subnet.error()) {
 					if (this.state.type === "supernet" && !subnet.isSupernet(cidr)) {
-						resulterror = "no space on supernet for all subnets";
-						break;
+						outof.push(subnet);
 					}
-
-					nextcidrs.push(subnet);
+					else {
+						subnets.push(subnet);
+					}
 				}
 				else {
 					resulterror=subnet.error();
 				}
 			}
-			if (nextcidrs.length>0) {
-				if (this.state.type === "first") {
-			      		avail=avail.concat(CIDR.diff(cidr,nextcidrs[0]));
+			if (outof.length >0 ) {
+				// find a supernet big enought for all the subnets
+				var bigenough;
+				for (i=Math.min(cidr.prefix-1, outof[outof.length-1].prefix); i>=0; i--) {
+					bigenough=outof[outof.length-1].supernet(i);
+					if (cidr.isSupernet(bigenough)) {
+						break;
+					}
 				}
-                        	for(var j=0;j<nextcidrs.length-1;j++) {
-                              		avail=avail.concat(CIDR.diff(nextcidrs[j],nextcidrs[j+1]));
+				resulterror = "no space on supernet for all subnets. "+bigenough.toString() +" should be big enough";
+			}
+			if (subnets.length>0) {
+				if (this.state.type === "first") {
+			      		avail=avail.concat(CIDR.diff(cidr,subnets[0]));
+				}
+                        	for(var j=0;j<subnets.length-1;j++) {
+                              		avail=avail.concat(CIDR.diff(subnets[j],subnets[j+1]));
                         	} 
 				if (this.state.type === "supernet") {
-			      		avail=avail.concat(CIDR.diff(nextcidrs[nextcidrs.length-1],cidr.next(32)));
+			      		avail=avail.concat(CIDR.diff(subnets[subnets.length-1],cidr.next(32)));
 				}
-
-				cidrs = {"free": avail,
-					 "subnet": nextcidrs,
-					 "in-use": this.state.type==="first" ? [cidr] : []};
 			}
+			cidrs = {"free": avail,
+				 "subnet": subnets,
+				 "out-of": outof,
+				 "in-use": this.state.type==="first" ? [cidr] : []};
                 } 
     		return (
 			<div className="container">
@@ -429,7 +441,7 @@ class CIDRForm extends React.Component {
 
 				{this.renderForm(cidr,prefixes)}
 			        {this.renderGrid(cidrs)}
-				{this.renderResult(nextcidrs, resulterror)}
+				{this.renderResult(subnets, resulterror)}
 			</div>
     		);
   	}
