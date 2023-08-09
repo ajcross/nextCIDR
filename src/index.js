@@ -368,6 +368,7 @@ class CIDRForm extends React.Component {
 		var resulterror;
 		var subnets=[];
 		var outof=[];
+		var freeoutof=[];
 
 		cidr = CIDR.parse(this.state.cidr);
 		prefixes = new Prefixes();
@@ -419,8 +420,15 @@ class CIDRForm extends React.Component {
 				if (this.state.type === "supernet") {
 			      		avail=avail.concat(CIDR.diff(subnets[subnets.length-1],cidr.next(32)));
 				}
+				if(outof.length>0) {
+					freeoutof = CIDR.diff(cidr,outof[0]);
+					for(j=0;j<outof.length-1;j++) {
+						freeoutof=freeoutof.concat(CIDR.diff(outof[j],outof[j+1]));
+					}
+				}
 			}
 			cidrs = {"free": avail,
+				 "free-out-of": freeoutof,
 				 "subnet": subnets,
 				 "out-of": outof,
 				 "in-use": this.state.type==="first" ? [cidr] : []};

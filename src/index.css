@@ -15,7 +15,9 @@ div.subnet {
 div.out-of {
 	background-color: red;
 }
-
+div.free-out-of {
+	background: #ffD3D3;
+}
 div.grid {
         display: grid;
         gap: 2px;
