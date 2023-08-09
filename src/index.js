@@ -34,12 +34,11 @@ class CIDR {
 	constructor(ip, prefix) {
 		this.ip = ip;
 		this.prefix = prefix;
-		this.errormsg = false;
 
 		if (this.prefix < 0 || this.prefix > 32) 
-			this.errormsg="invalid prefix, must be between 0 and 32";
+			throw (new Error("invalid prefix, must be between 0 and 32"));
 		else if (this.ip >= 2**32) {
-			this.errormsg="IP address out of range";
+			throw (new Error("IP address out of range"));
 		}
 		else if (this.ip % 2**(32-this.prefix) !== 0) {
 			// Invalid prefix for this IP
@@ -54,7 +53,7 @@ class CIDR {
 			}
 			// 2. find a valid ip for the prefix
 			var validip = validprefix.supernet(this.prefix);
-			this.errormsg="Invalid prefix for this IP. Alternative CIDRs: "+validip.toString()+" or "+validprefix.toString();
+			throw (new Error("Invalid prefix for this IP. Alternative CIDRs: "+validip.toString()+" or "+validprefix.toString()));
 		}
 	}
 	toString() {
@@ -77,18 +76,11 @@ class CIDR {
 			for (var i=0;i<4;i++) {
 				ip += parseInt(octets[3-i],10) * 2 ** (8*i);
 			}
-			var cidr = new CIDR(ip,prefix);
-			if (cidr.error()) 
-				return cidr.error();
-			else
-				return cidr;
+			return new CIDR(ip,prefix);
 		}
 		else {
-			return "Invalid CIDR syntax. Use a.b.c.d/n";
+			throw(new Error("Invalid CIDR syntax. Use a.b.c.d/n"));
 		}
-	}
-	error() {
-		return this.errormsg;
 	}
 	supernet(n) {
 		var mod = this.ip % 2**(32-n);
@@ -157,7 +149,6 @@ class CIDR {
 class Prefixes {
 	constructor (prefixes) {
 		this.prefixes = prefixes;
-		this.errormsg=false;
 	}
 	parse(s) {
 		const regex = new RegExp("^[0-9]+(\\*[0-9]+)?$");
@@ -167,15 +158,13 @@ class Prefixes {
 			if (pres[i]!=="") {
 				const valid = regex.test(pres[i]);
 				if (!valid) {
-					this.errormsg="Invalid prefix: "+pres[i];
-					break;
+					throw(new Error("Invalid prefix: "+pres[i]));;
 				}
 				const press = pres[i].split("*");
 				const p = parseInt(press[0],10);
 				var mul = 1;
 				if (p > 32 || p <0) {
-					this.errormsg="Invalid prefix value, must be between 0 and 32";
-					break;
+					throw(new Error("Invalid prefix value, must be between 0 and 32"));
 				}
 				if (press.length === 2)
 					mul = parseInt(press[1],10);
@@ -184,9 +173,6 @@ class Prefixes {
 				}
 			}
 		}
-	}
-	error() {
-		return this.errormsg;
 	}
 }
 class CIDRForm extends React.Component {
@@ -204,15 +190,7 @@ class CIDRForm extends React.Component {
 	copyCodeToClipboard = (resulttext) => {
 		navigator.clipboard.writeText(resulttext);
   	}
-        renderForm(cidr, prefixes) {
-		var cidrerror;
-		if (typeof cidr === "string") {
-			cidrerror=cidr;
-		}
-		var prefixeserror="";
-		if (prefixes.error()) {
-			prefixeserror=prefixes.error();
-		}
+        renderForm(cidr, cidrerror, prefixes, prefixeserror) {
 		return (
 		<div>
         		<div className="mb-2">
@@ -369,34 +347,45 @@ class CIDRForm extends React.Component {
 		var subnets=[];
 		var outof=[];
 		var freeoutof=[];
-
-		cidr = CIDR.parse(this.state.cidr);
-		prefixes = new Prefixes();
-		prefixes.parse(this.state.prefixes);
+		var prefixeserror="";
+		var cidrerror=null;
 		var avail=[];
 		var cidrs={};
 
-		if (typeof cidr !== "string" && prefixes.prefixes.length > 0) {
+		prefixes = new Prefixes();
+		try {
+			prefixes.parse(this.state.prefixes);
+		}
+		catch (e) {
+			prefixeserror = e.message;
+		}
+
+		try {
+		        cidr = CIDR.parse(this.state.cidr);
+		}
+		catch (e) {
+			cidrerror = e.message;
+		}
+		if (!cidrerror && prefixes.prefixes.length > 0) {
 			var i=0;
 			var subnet=cidr;
 
 			for (i=0; i<prefixes.prefixes.length; i++) {
-				if (i===0 && this.state.type === "supernet") {
-				    	subnet=new CIDR(cidr.ip, 32).supernet(prefixes.prefixes[0]);
-				}
-				else {
-					subnet=subnet.next(prefixes.prefixes[i]);
-				}
-				if (!subnet.error()) {
-					if (this.state.type === "supernet" && !subnet.isSupernet(cidr)) {
-						outof.push(subnet);
+				try {
+					if (i===0 && this.state.type === "supernet") {
+				    		subnet=new CIDR(cidr.ip, 32).supernet(prefixes.prefixes[0]);
 					}
 					else {
-						subnets.push(subnet);
+						subnet=subnet.next(prefixes.prefixes[i]);
 					}
+				} catch(e) {
+					resulterror=e.message;
+				}
+				if (this.state.type === "supernet" && !subnet.isSupernet(cidr)) {
+					outof.push(subnet);
 				}
 				else {
-					resulterror=subnet.error();
+					subnets.push(subnet);
 				}
 			}
 			if (outof.length >0 ) {
@@ -447,7 +436,7 @@ class CIDRForm extends React.Component {
 <p> Runs on client, no server-side execution, no data transfer, and no cookies. </p>
 
 
-				{this.renderForm(cidr,prefixes)}
+				{this.renderForm(cidr,cidrerror,prefixes,prefixeserror)}
 			        {this.renderGrid(cidrs)}
 				{this.renderResult(subnets, resulterror)}
 			</div>
