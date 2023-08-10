@@ -433,7 +433,7 @@ renderSquare(cidr,maxprefix, cols, ip0) {
 						break;
 					}
 				}
-				resulterror = "no space on supernet for all subnets. You need at least /"+bigenough.prefix+" prefix, For example "+bigenough.toString();
+				resulterror = "no space on supernet for all subnets. You need at least /"+bigenough.prefix+" prefix, for example "+bigenough.toString();
 			}
 			if (subnets.length>0) {
 				if (this.state.type === "first") {
