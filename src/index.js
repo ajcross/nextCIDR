@@ -292,7 +292,7 @@ renderSquare(cidr,maxprefix, cols, ip0) {
   		return (
     		<OverlayTrigger
 			key={cidr.toString()}
-      			placement="right"
+      			placement="auto"
       			delay={{ show: 150, hide: 100 }}
       			overlay={renderTooltip}
     		>
