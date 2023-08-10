@@ -183,12 +183,16 @@ constructor(props) {
 		"prefixes": "28*3, 26, 24, 23",
 		"type": "supernet"};
 	this.handleChange = this.handleChange.bind(this);
+	this.setCIDR = this.setCIDR.bind(this);
 }
 handleChange(event) {
 	this.setState({[event.target.name]: event.target.value});
 }
 copyCodeToClipboard = (resulttext) => {
 	navigator.clipboard.writeText(resulttext);
+}
+setCIDR (cidr) {
+	this.setState({"cidr":cidr});
 }
 
 renderError(errormessage) {
@@ -199,7 +203,7 @@ renderError(errormessage) {
 	while ((result = regex.exec(errormessage)) !== null) {
     		elements.push(errormessage.substring(i,result.index));
     		elements.push(
-		        <button key={i} className="link-button" type="button" onClick={(e) => this.setState({"cidr": e.target.innerHTML})}> 
+		        <button key={i} className="link-button" type="button" onClick={this.setCIDR.bind(this, result[0])}> 
 			{result[0]}
                                </button>);
     		i=regex.lastIndex;
@@ -320,7 +324,6 @@ renderSquare(cidr,maxprefix, cols, ip0) {
 
                 var maxprefix=cidrs.reduce((accumulador, cidr)=> Math.max(accumulador,cidr.prefix),0);
 		var minip = cidrs.reduce((accumulador, cidr)=> Math.min(accumulador, cidr.ip),cidrs[0].ip);
-		console.log(maxprefix-logCols);
 		var ip0 = new CIDR(minip,32).supernet(Math.max(0,maxprefix-logCols));
 
 		var squares=cidrs.map( (cidr) => this.renderSquare(cidr, maxprefix, cols, ip0));
