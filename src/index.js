@@ -179,7 +179,7 @@ class CIDRForm extends React.Component {
 constructor(props) {
 	super(props);
 	this.state = {
-		"cidr": "10.0.0.0/22",
+		"cidr": "10.0.0.0/21",
 		"prefixes": "28*3, 26, 24, 23",
 		"type": "supernet"};
 	this.handleChange = this.handleChange.bind(this);
@@ -276,12 +276,12 @@ renderSquare(cidr,maxprefix, cols, ip0) {
 	var pos = (cidr.ip-ip0.ip)/2**(32-maxprefix);
 	var units = 2**(maxprefix-cidr.prefix);
 	var w = (units-1)%cols+1;
-	var h = Math.floor(units/cols);
+	var h = Math.floor((units-1)/cols);
 	var rowStart=Math.floor(pos/cols)+1;
-	var rowEnd="span "+(h);
+	var rowEnd="span "+(h+1);
 	var colStart=pos%cols+1;
 	var colEnd="span "+(w);
-	//console.log(cidr.toString()+ " pos "+ pos + " rowStart:"+rowStart+" rowEnd:"+rowEnd+" colStart: "+colStart+" colEnd: "+colEnd);
+	//console.log(cidr.toString()+ " pos "+ pos + " rowStart:"+rowStart+" rowEnd:"+rowEnd+" colStart: "+colStart+" colEnd: "+colEnd+ " "+cidr.type);
 	const renderTooltip = (props) => (
     			<Tooltip id="button-tooltip" {...props}>
 				{cidr.type} {cidr.toString()}
@@ -325,7 +325,6 @@ renderSquare(cidr,maxprefix, cols, ip0) {
                 var maxprefix=cidrs.reduce((accumulador, cidr)=> Math.max(accumulador,cidr.prefix),0);
 		var minip = cidrs.reduce((accumulador, cidr)=> Math.min(accumulador, cidr.ip),cidrs[0].ip);
 		var ip0 = new CIDR(minip,32).supernet(Math.max(0,maxprefix-logCols));
-
 		var squares=cidrs.map( (cidr) => this.renderSquare(cidr, maxprefix, cols, ip0));
 		return <div className='grid'>
 			     {squares}</div> ;
