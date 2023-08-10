@@ -140,122 +140,145 @@ class CIDR {
 	}
 	static available(cidrs) {
 		var avail=[];
-		for(var i=0;i<cidrs.length-1;i++) {
-			avail=avail.concat(CIDR.diff(cidrs[i],cidrs[i+1]));
-		}
-		return avail;
+	for(var i=0;i<cidrs.length-1;i++) {
+		avail=avail.concat(CIDR.diff(cidrs[i],cidrs[i+1]));
 	}
+	return avail;
+}
 }
 class Prefixes {
-	constructor (prefixes) {
-		this.prefixes = prefixes;
-	}
-	parse(s) {
-		const regex = new RegExp("^[0-9]+(\\*[0-9]+)?$");
-		var pres = s.split(/[ ,]+/);
-		this.prefixes = [];
-		for (var i=0; i< pres.length; i++) {
-			if (pres[i]!=="") {
-				const valid = regex.test(pres[i]);
-				if (!valid) {
-					throw(new Error("Invalid prefix: "+pres[i]));;
-				}
-				const press = pres[i].split("*");
-				const p = parseInt(press[0],10);
-				var mul = 1;
-				if (p > 32 || p <0) {
-					throw(new Error("Invalid prefix value, must be between 0 and 32"));
-				}
-				if (press.length === 2)
-					mul = parseInt(press[1],10);
-				for (var j=0; j<mul; j++) {
-					this.prefixes.push(p);
-				}
+constructor (prefixes) {
+	this.prefixes = prefixes;
+}
+parse(s) {
+	const regex = new RegExp("^[0-9]+(\\*[0-9]+)?$");
+	var pres = s.split(/[ ,]+/);
+	this.prefixes = [];
+	for (var i=0; i< pres.length; i++) {
+		if (pres[i]!=="") {
+			const valid = regex.test(pres[i]);
+			if (!valid) {
+				throw(new Error("Invalid prefix: "+pres[i]));;
+			}
+			const press = pres[i].split("*");
+			const p = parseInt(press[0],10);
+			var mul = 1;
+			if (p > 32 || p <0) {
+				throw(new Error("Invalid prefix value, must be between 0 and 32"));
+			}
+			if (press.length === 2)
+				mul = parseInt(press[1],10);
+			for (var j=0; j<mul; j++) {
+				this.prefixes.push(p);
 			}
 		}
 	}
 }
+}
 class CIDRForm extends React.Component {
-	constructor(props) {
-		super(props);
-		this.state = {
-			"cidr": "10.0.0.0/22",
-			"prefixes": "28*3, 26, 24, 23",
-		        "type": "supernet"};
-		this.handleChange = this.handleChange.bind(this);
-	}
-	handleChange(event) {
-		this.setState({[event.target.name]: event.target.value});
-  	}
-	copyCodeToClipboard = (resulttext) => {
-		navigator.clipboard.writeText(resulttext);
-  	}
-        renderForm(cidr, cidrerror, prefixes, prefixeserror) {
-		return (
-		<div>
-        		<div className="mb-2">
-			<div className="form-check form-check-inline mb-2">
-			        <input type="radio" 
-			               value="first" 
-			               id="first"
-			               className="form-check-input"
-			               checked={this.state.type === "first"} 
-			               onChange={this.handleChange} 
-			               name="type" />
-		                <label htmlFor="first" className="form-check-label">
-			               start after
-			        </label>
-			</div>
-			<div className="form-check form-check-inline">
-			        <input type="radio" 
-			               value="supernet" 
-			               id="supernet"
-			               className="form-check-input"
-			               checked={this.state.type === "supernet"} 
-                                       onChange={this.handleChange} 
-			               name="type" />
-		                <label htmlFor="supernet" className="form-check-label">
-			               supernet
-			        </label>
-			</div>
-			<div>
-          			<input id="cidr" 
-				       className="form-control" 
-				       type="text" 
-				       name="cidr" 
-				       value={this.state.cidr} 
-				       onChange={this.handleChange} 
-		  	 	       autoComplete="off" />
-	                	<div className="text-danger">{cidrerror}</div>
-			</div> </div>
-        		<div className="mb-3">
-				<label htmlFor="prefixes" className="form-label">
-					Prefixes for next CIDRs:
-				</label>
-          			<input id="prefixes" 
-		                       className="form-control" 
-		                       type="text" 
-		                       name="prefixes" 
-		                       value={this.state.prefixes} 
-		                       onChange={this.handleChange} 
-		                       autoComplete="off"/>
-	                	<div className="text-danger">{prefixeserror}</div>
-			</div>
-		</div>
-		);
-	}
-	renderSquare(cidr,maxprefix, cols, ip0) {
+constructor(props) {
+	super(props);
+	this.state = {
+		"cidr": "10.0.0.0/22",
+		"prefixes": "28*3, 26, 24, 23",
+		"type": "supernet"};
+	this.handleChange = this.handleChange.bind(this);
+}
+handleChange(event) {
+	this.setState({[event.target.name]: event.target.value});
+}
+copyCodeToClipboard = (resulttext) => {
+	navigator.clipboard.writeText(resulttext);
+}
 
-		var pos = (cidr.ip-ip0.ip)/2**(32-maxprefix);
-		var units = 2**(maxprefix-cidr.prefix);
-		var w = (units-1)%cols+1;
-	        var h = Math.floor(units/cols);
-		var rowStart=Math.floor(pos/cols)+1;
-		var rowEnd="span "+(h);
-		var colStart=pos%cols+1;
-		var colEnd="span "+(w);
-                //console.log(cidr.toString()+ " pos "+ pos + " rowStart:"+rowStart+" rowEnd:"+rowEnd+" colStart: "+colStart+" colEnd: "+colEnd);
-  		const renderTooltip = (props) => (
+renderError(errormessage) {
+	const regex = new RegExp(CIDR.ipv4+"/"+CIDR.prefix,"g");
+	let result;
+	var i=0;
+	var elements=[];
+	while ((result = regex.exec(errormessage)) !== null) {
+    		elements.push(errormessage.substring(i,result.index));
+    		elements.push(
+		        <button key={i} className="link-button" type="button" onClick={(e) => this.setState({"cidr": e.target.innerHTML})}> 
+			{result[0]}
+                               </button>);
+    		i=regex.lastIndex;
+	}
+	elements.push(errormessage.substring(i));
+	return elements;
+}
+renderForm(cidr, cidrerror, prefixes, prefixeserror) {
+	if(cidrerror) {
+		cidrerror=this.renderError(cidrerror);
+	}
+	if(prefixeserror) {
+		prefixeserror = this.renderError(prefixeserror);
+	}
+	return (
+	<div>
+		<div className="mb-2">
+		<div className="form-check form-check-inline mb-2">
+			<input type="radio" 
+			       value="first" 
+			       id="first"
+			       className="form-check-input"
+			       checked={this.state.type === "first"} 
+			       onChange={this.handleChange} 
+			       name="type" />
+			<label htmlFor="first" className="form-check-label">
+			       start after
+			</label>
+		</div>
+		<div className="form-check form-check-inline">
+			<input type="radio" 
+			       value="supernet" 
+			       id="supernet"
+			       className="form-check-input"
+			       checked={this.state.type === "supernet"} 
+			       onChange={this.handleChange} 
+			       name="type" />
+			<label htmlFor="supernet" className="form-check-label">
+			       supernet
+			</label>
+		</div>
+		<div>
+			<input id="cidr" 
+			       className="form-control" 
+			       type="text" 
+			       name="cidr" 
+			       value={this.state.cidr} 
+			       onChange={this.handleChange} 
+			       autoComplete="off" />
+			<div className="text-danger">{cidrerror}</div>
+		</div> </div>
+		<div className="mb-3">
+			<label htmlFor="prefixes" className="form-label">
+				Prefixes for next CIDRs:
+			</label>
+			<input id="prefixes" 
+			       className="form-control" 
+			       type="text" 
+			       name="prefixes" 
+			       value={this.state.prefixes} 
+			       onChange={this.handleChange} 
+			       autoComplete="off"/>
+			<div className="text-danger">{prefixeserror}</div>
+		</div>
+	</div>
+	);
+}
+renderSquare(cidr,maxprefix, cols, ip0) {
+
+	var pos = (cidr.ip-ip0.ip)/2**(32-maxprefix);
+	var units = 2**(maxprefix-cidr.prefix);
+	var w = (units-1)%cols+1;
+	var h = Math.floor(units/cols);
+	var rowStart=Math.floor(pos/cols)+1;
+	var rowEnd="span "+(h);
+	var colStart=pos%cols+1;
+	var colEnd="span "+(w);
+	//console.log(cidr.toString()+ " pos "+ pos + " rowStart:"+rowStart+" rowEnd:"+rowEnd+" colStart: "+colStart+" colEnd: "+colEnd);
+	const renderTooltip = (props) => (
     			<Tooltip id="button-tooltip" {...props}>
 				{cidr.type} {cidr.toString()}
                                 <div>ip count: {cidr.ipCount().toString()}</div>
@@ -297,48 +320,61 @@ class CIDRForm extends React.Component {
 
                 var maxprefix=cidrs.reduce((accumulador, cidr)=> Math.max(accumulador,cidr.prefix),0);
 		var minip = cidrs.reduce((accumulador, cidr)=> Math.min(accumulador, cidr.ip),cidrs[0].ip);
-		var ip0 = new CIDR(minip,32).supernet(maxprefix-logCols);
+		console.log(maxprefix-logCols);
+		var ip0 = new CIDR(minip,32).supernet(Math.max(0,maxprefix-logCols));
 
 		var squares=cidrs.map( (cidr) => this.renderSquare(cidr, maxprefix, cols, ip0));
 		return <div className='grid'>
 			     {squares}</div> ;
 	}
 
-	renderResult(nextcidrs, resulterror)  {
-		var results;
-		var resultserror = <div className="text-danger">{resulterror}</div>;
-		if (nextcidrs.length>0) {
-			var nextcidrstxt="";
-			var nextcidrslist = nextcidrs.map( (nextcidr) =>  (
+	renderSubnets(subnets)  {
+		if (subnets && subnets.length) {
+			var results;
+			var clipboardtxt="";
+			var subnetslist = subnets.map( (subnet) =>  (
 				<li className="list-group-item" 
-				    key={nextcidr.toString()}> {nextcidr.toString()} 
-				  <div>broadcast: {nextcidr.broadcast().toString()}</div>
-				  <div>ip count: {nextcidr.ipCount().toString()}</div>
+				    key={subnet.toString()}> {subnet.toString()} 
+				  <div>broadcast: {subnet.broadcast().toString()}</div>
+				  <div>ip count: {subnet.ipCount().toString()}</div>
 				</li>)
 			);
-	        	nextcidrstxt=nextcidrs.reduce ( (s1, s2) => (s1+"\n"+ s2));
+	        	clipboardtxt=subnets.reduce ( (s1, s2) => (s1+"\n"+ s2));
 			
 			var resultslist = 
        			<div className="mt-3">
 				<label htmlFor="next" className="form-label">
 					Subnets CIDR:
 				</label>
-				<ul className="list-group" id="next2"> {nextcidrslist}</ul>
+				<ul className="list-group" id="next2"> {subnetslist}</ul>
 			</div>;
 
 
 			var copybutton = 
         		<div className="mt-1">
-			        <button type="button" className="btn btn-outline-primary align-top" onClick={() => this.copyCodeToClipboard(nextcidrstxt)}>
+			        <button type="button" className="btn btn-outline-primary align-top" onClick={() => this.copyCodeToClipboard(clipboardtxt)}>
                                    <i className="bi bi-clipboard align-top"></i> Copy
                                 </button>
         		</div>;
-			results = <div>{resultserror}{resultslist}{resultserror}{copybutton}</div>; 
+			results = <>{resultslist}{copybutton}</>; 
+			return results;
+		}
+	}
+	renderResult(cidrs, resulterror)  {
+		if (resulterror) {
+			resulterror= this.renderError(resulterror);
+		}
+		var resultserror = <div className="text-danger">{resulterror}</div>;
+		if (cidrs) {
+			return <div>
+				    {resultserror}
+			            {this.renderGrid(cidrs)}
+			            {this.renderSubnets(cidrs["subnet"])}
+			       </div>; 
 		}
 		else {
-			results = <div>{resultserror}</div>;
+			return <div>{resultserror}</div>;
 		}
-		return (<div>{results}</div>);
 	}
   	render() {
 		var cidr;
@@ -347,7 +383,7 @@ class CIDRForm extends React.Component {
 		var subnets=[];
 		var outof=[];
 		var freeoutof=[];
-		var prefixeserror="";
+		var prefixeserror=null;
 		var cidrerror=null;
 		var avail=[];
 		var cidrs={};
@@ -397,7 +433,7 @@ class CIDRForm extends React.Component {
 						break;
 					}
 				}
-				resulterror = "no space on supernet for all subnets. "+bigenough.toString() +" should be big enough";
+				resulterror = "no space on supernet for all subnets. You need at least /"+bigenough.prefix+" prefix, For example "+bigenough.toString();
 			}
 			if (subnets.length>0) {
 				if (this.state.type === "first") {
@@ -437,8 +473,7 @@ class CIDRForm extends React.Component {
 
 
 				{this.renderForm(cidr,cidrerror,prefixes,prefixeserror)}
-			        {this.renderGrid(cidrs)}
-				{this.renderResult(subnets, resulterror)}
+				{this.renderResult(cidrs, resulterror)}
 			</div>
     		);
   	}
