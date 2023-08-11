@@ -6,6 +6,9 @@ import Tooltip from 'react-bootstrap/Tooltip';
 import OverlayTrigger from 'react-bootstrap/OverlayTrigger';
 
 
+function logBase(x, y) {
+  return Math.log(y) / Math.log(x);
+}
 
 class IP {
 	constructor(ip, prefix) {
@@ -122,20 +125,16 @@ class CIDR {
 			return []
 		}
 		else {
-		   var n = null;
-		   var s = cidr1.next(cidr1.prefix);
-		   for (var i=cidr1.prefix-1;i>=0;i--) {
-			   if (cidr1.isSupernet(s) || cidr2.isSupernet(s)) 
-				   break;
-			   n = s;
-			   s = n.supernet(i);
+		   var n = [];
+		   var ip1=cidr1.next(32).ip;
+		   var ip2=cidr2.ip;
+		   var lb=Math.floor(logBase(2,ip2-ip1));
+		   while(lb>0) {
+			ip2=ip2-2**lb;
+			n.push(new CIDR(ip2,32-lb));
+		        lb=Math.floor(logBase(2,ip2-ip1));
 		   }
-		   if (n == null) {
-			   return [];
-		   }
-		   else {
-			   return [n].concat(CIDR.diff(n,cidr2))
-	           }
+		   return n;
 		}
 	}
 	static available(cidrs) {
@@ -232,6 +231,7 @@ renderForm(cidr, cidrerror, prefixes, prefixeserror) {
 			<label htmlFor="first" className="form-check-label">
 			       start after
 			</label>
+
 		</div>
 		<div className="form-check form-check-inline">
 			<input type="radio" 
