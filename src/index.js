@@ -3,6 +3,10 @@ import ReactDOM from 'react-dom';
 import './index.css';
 import Tooltip from 'react-bootstrap/Tooltip';
 import OverlayTrigger from 'react-bootstrap/OverlayTrigger';
+import Button from 'react-bootstrap/Button';
+import Form from 'react-bootstrap/Form';
+import Alert from 'react-bootstrap/Alert';
+
 
 
 function logBase(x, y) {
@@ -193,6 +197,9 @@ class CIDRForm extends React.Component {
             "cidr": cidr
         });
     }
+               // <Button key={i} variant="link" onClick={this.setCIDR.bind(this, result[0])}> 
+              //      {result[0]}
+               // </Button>);
 
     renderError(errormessage) {
         const regex = new RegExp(CIDR.ipv4 + "/" + CIDR.prefix, "g");
@@ -202,81 +209,68 @@ class CIDRForm extends React.Component {
         while ((result = regex.exec(errormessage)) !== null) {
             elements.push(errormessage.substring(i, result.index));
             elements.push(
-                <button key={i} className="link-button" type="button" onClick={this.setCIDR.bind(this, result[0])}> 
+                <Alert.Link 
+                    href='#' 
+                    key={result[0]}
+                    onClick={this.setCIDR.bind(this, result[0])}> 
                     {result[0]}
-                </button>);
+                </Alert.Link>);
             i = regex.lastIndex;
         }
         elements.push(errormessage.substring(i));
-        return elements;
+        return <Alert variant="danger"
+                   className="mt-1">
+                   {elements}
+               </Alert>;
     }
     renderForm(cidr, cidrerror, prefixes, prefixeserror) {
-        if (cidrerror) {
-            cidrerror = this.renderError(cidrerror);
-        }
-        if (prefixeserror) {
-            prefixeserror = this.renderError(prefixeserror);
-        }
         return (
-            <div>
-                <div className="mb-2">
-                    <div className="form-check form-check-inline mb-2">
-                        <input type="radio" 
-                            value="first" 
-                            id="first"
-                            className="form-check-input"
-                            checked={this.state.type === "first"} 
-                            onChange={this.handleChange} 
-                            name="type" />
+            <>
+                <Form>
+                    <Form.Check  
+                        value="first" 
+                        id="first"
+                        label='start after'
+                        type='radio'
+                        inline
+                        checked={this.state.type === "first"} 
+                        onChange={this.handleChange} 
+                        name="type" />
 
-                            <label htmlFor="first" className="form-check-label">
-                                start after
-                            </label>
-                    </div>
-                    <div className="form-check form-check-inline">
-                        <input type="radio" 
-                            value="supernet" 
-                            id="supernet"
-                            className="form-check-input"
-                            checked={this.state.type === "supernet"} 
-                            onChange={this.handleChange} 
-                            name="type" />
+                    <Form.Check
+                        value="supernet" 
+                        id="supernet"
+                        label='supernet'
+                        type='radio'
+                        inline
+                        checked={this.state.type === "supernet"} 
+                        onChange={this.handleChange} 
+                        name="type" />
 
-                            <label htmlFor="supernet" className="form-check-label">
-                                supernet
-                            </label>
-                    </div>
-
-                    <div>
-                        <input id="cidr" 
-                            className="form-control" 
-                            type="text" 
-                            name="cidr" 
-                            value={this.state.cidr} 
-                            onChange={this.handleChange} 
-                            autoComplete="off" />
-                        <div className="text-danger">
-                            {cidrerror}
-                        </div>
-                    </div> 
-                </div>
+                    <Form.Control
+                        id="cidr" 
+                        type="text" 
+                        name="cidr" 
+                        value={this.state.cidr} 
+                        onChange={this.handleChange} 
+                        autoComplete="off" />
+                    {cidrerror ? this.renderError(cidrerror): null}
+                </Form>
 
                 <div className="mb-3">
-                    <label htmlFor="prefixes" className="form-label">
-                        Prefixes for next CIDRs:
-                    </label>
-                    <input id="prefixes" 
-                        className="form-control" 
-                        type="text" 
-                        name="prefixes" 
-                        value={this.state.prefixes} 
-                        onChange={this.handleChange} 
-                        autoComplete="off"/>
-                    <div className="text-danger">
-                        {prefixeserror}
-                    </div>
+                    <Form.Group>
+                        <Form.Label>Prefixes for next CIDRs:</Form.Label>
+                        <Form.Control
+                            id="prefixes" 
+                            type="text" 
+                            name="prefixes" 
+                            value={this.state.prefixes} 
+                            onChange={this.handleChange} 
+                            autoComplete="off" />
+                    </Form.Group>
+                    {prefixeserror ? this.renderError(prefixeserror):null}
                 </div>
-            </div>
+            </>
         );
     }
     renderSquare(cidr, maxprefix, cols, ip0) {
@@ -363,27 +357,24 @@ class CIDRForm extends React.Component {
 
             var copybutton =
                 <div className="mt-1">
-                    <button type="button" className="btn btn-outline-primary align-top" onClick={() => this.copyCodeToClipboard(clipboardtxt)}>
-                        <i className="bi bi-clipboard align-top"></i> Copy
-                    </button>
+                    <Button 
+                        onClick={() => this.copyCodeToClipboard(clipboardtxt)}>
+                        <i className="bi bi-clipboard align-top"/> Copy
+                    </Button>
                 </div>;
             results = <>{resultslist}{copybutton}</>;
             return results;
         }
     }
     renderResult(cidrs, resulterror) {
-        if (resulterror) {
-            resulterror = this.renderError(resulterror);
-        }
-        var resultserror = <div className="text-danger">{resulterror}</div>;
         if (cidrs) {
-            return <div>
-                       {resultserror}
+            return <>
+                       {resulterror ? this.renderError(resulterror):null}
                        {this.renderGrid(cidrs)}
                        {this.renderSubnets(cidrs["subnet"])}
-                   </div>;
+                   </>;
         } else {
-            return <div>{resultserror}</div>;
+            return <>{resulterror ? this.renderError(resulterror):null}</>;
         }
     }
     render() {
