@@ -357,7 +357,9 @@ class CIDRForm extends React.Component {
 
 
             var copybutton =
-                <Button  className="mt-1"
+                <Button  
+                    className="mt-1"
+                    variant="outline-primary"
                     onClick={() => this.copyCodeToClipboard(clipboardtxt)}>
                     <i className="bi bi-clipboard align-top"/> Copy
                 </Button>;
