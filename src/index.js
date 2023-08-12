@@ -6,6 +6,7 @@ import OverlayTrigger from 'react-bootstrap/OverlayTrigger';
 import Button from 'react-bootstrap/Button';
 import Form from 'react-bootstrap/Form';
 import Alert from 'react-bootstrap/Alert';
+import ListGroup from 'react-bootstrap/ListGroup';
 
 
 
@@ -257,9 +258,9 @@ class CIDRForm extends React.Component {
                     {cidrerror ? this.renderError(cidrerror): null}
                 </Form>
 
-                <div className="mb-3">
+                <div className="mb-3 mt-2">
                     <Form.Group>
-                        <Form.Label>Prefixes for next CIDRs:</Form.Label>
+                        <Form.Label className="mb-0">Prefixes:</Form.Label>
                         <Form.Control
                             id="prefixes" 
                             type="text" 
@@ -339,29 +340,25 @@ class CIDRForm extends React.Component {
             var results;
             var clipboardtxt = "";
             var subnetslist = subnets.map((subnet) => (
-                <li className="list-group-item" 
-                    key={subnet.toString()}> {subnet.toString()} 
+                <ListGroup.Item key={subnet.toString()}> 
+                    {subnet.toString()} 
                     <div>broadcast: {subnet.broadcast().toString()}</div>
                     <div>ip count: {subnet.ipCount().toString()}</div>
-                </li>));
+                </ListGroup.Item>));
             clipboardtxt = subnets.reduce((s1, s2) => (s1 + "\n" + s2));
 
             var resultslist =
                 <div className="mt-3">
-                    <label htmlFor="next" className="form-label">
-                        Subnets CIDR:
-                    </label>
-                    <ul className="list-group" id="next2"> {subnetslist}</ul>
+                    Subnets:
+                    <ListGroup> {subnetslist}</ListGroup>
                 </div>;
 
 
             var copybutton =
-                <div className="mt-1">
-                    <Button 
-                        onClick={() => this.copyCodeToClipboard(clipboardtxt)}>
-                        <i className="bi bi-clipboard align-top"/> Copy
-                    </Button>
-                </div>;
+                <Button  className="mt-1"
+                    onClick={() => this.copyCodeToClipboard(clipboardtxt)}>
+                    <i className="bi bi-clipboard align-top"/> Copy
+                </Button>;
             results = <>{resultslist}{copybutton}</>;
             return results;
         }
