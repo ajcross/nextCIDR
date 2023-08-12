@@ -122,12 +122,21 @@ class CIDR {
         return new IP(this.ip + d - 1);
     }
     static diff(cidr1, cidr2) {
-        if (cidr1.ip >= cidr2.ip) {
+        try {
+            var ip1 = cidr1.next(32).ip;
+        } catch (e) {
+            return [];
+        } 
+        var ip2;
+        if (cidr2===null)
+            ip2 = 2**32;
+        else
+            ip2 = cidr2.ip;
+
+        if (ip1 >= ip2) {
             return []
         } else {
             var n = [];
-            var ip1 = cidr1.next(32).ip;
-            var ip2 = cidr2.ip;
             var lb = Math.floor(logBase(2, ip2 - ip1));
             while (lb > 0) {
                 ip2 = ip2 - 2 ** lb;
@@ -136,13 +145,6 @@ class CIDR {
             }
             return n;
         }
-    }
-    static available(cidrs) {
-        var avail = [];
-        for (var i = 0; i < cidrs.length - 1; i++) {
-            avail = avail.concat(CIDR.diff(cidrs[i], cidrs[i + 1]));
-        }
-        return avail;
     }
 }
 class Prefixes {
@@ -401,33 +403,32 @@ class CIDRForm extends React.Component {
         if (!cidrerror && prefixes.prefixes.length > 0) {
             var i = 0;
             var subnet = cidr;
-
-            for (i = 0; i < prefixes.prefixes.length; i++) {
-                try {
+            try {
+                for (i = 0; i < prefixes.prefixes.length; i++) {
                     if (i === 0 && this.state.type === "supernet") {
                         subnet = new CIDR(cidr.ip, 32).supernet(prefixes.prefixes[0]);
                     } else {
                         subnet = subnet.next(prefixes.prefixes[i]);
                     }
-                } catch (e) {
-                    resulterror = e.message;
-                }
-                if (this.state.type === "supernet" && !subnet.isSupernet(cidr)) {
-                    outof.push(subnet);
-                } else {
-                    subnets.push(subnet);
-                }
-            }
-            if (outof.length > 0) {
-                // find a supernet big enought for all the subnets
-                var bigenough;
-                for (i = Math.min(cidr.prefix - 1, outof[outof.length - 1].prefix); i >= 0; i--) {
-                    bigenough = outof[outof.length - 1].supernet(i);
-                    if (cidr.isSupernet(bigenough)) {
-                        break;
+                    if (this.state.type === "supernet" && !subnet.isSupernet(cidr)) {
+                        outof.push(subnet);
+                    } else {
+                        subnets.push(subnet);
                     }
                 }
-                resulterror = "no space on supernet for all subnets. You need at least /" + bigenough.prefix + " prefix, for example " + bigenough.toString();
+                if (outof.length > 0) {
+                    // find a supernet big enought for all the subnets
+                    var bigenough;
+                    for (i = Math.min(cidr.prefix - 1, outof[outof.length - 1].prefix); i >= 0; i--) {
+                        bigenough = outof[outof.length - 1].supernet(i);
+                        if (cidr.isSupernet(bigenough)) {
+                            break;
+                        }
+                    }
+                    resulterror = "no room on supernet for all subnets. You need at least /" + bigenough.prefix + " prefix, for example " + bigenough.toString();
+                }
+            } catch (e) {
+                resulterror = e.message;
             }
             if (subnets.length > 0) {
                 if (this.state.type === "first") {
@@ -437,7 +438,13 @@ class CIDRForm extends React.Component {
                     avail = avail.concat(CIDR.diff(subnets[j], subnets[j + 1]));
                 }
                 if (this.state.type === "supernet") {
-                    avail = avail.concat(CIDR.diff(subnets[subnets.length - 1], cidr.next(32)));
+                    var next;
+                    try {
+                        next=cidr.next(32);
+                    } catch (e) { // next went of range 
+                        next=null;
+                    }
+                    avail = avail.concat(CIDR.diff(subnets[subnets.length - 1], next));
                 }
                 if (outof.length > 0) {
                     freeoutof = CIDR.diff(cidr, outof[0]);
