@@ -128,11 +128,13 @@ class CIDR {
             return []
         } else {
             var n = [];
-            var lb = Math.floor(logBase(2, ip2 - ip1));
-            while (lb > 0) {
+            var d = ip2 - ip1;
+            var lb = Math.floor(logBase(2, d));
+            while (d > 0) {
                 ip2 = ip2 - 2 ** lb;
                 n.push(new CIDR(ip2, 32 - lb));
-                lb = Math.floor(logBase(2, ip2 - ip1));
+                d = ip2 - ip1;
+                lb = Math.floor(logBase(2, d));
             }
             return n;
         }
