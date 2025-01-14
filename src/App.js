@@ -270,6 +270,7 @@ function CIDRForm() {
             <p> Just a CIDR calculator </p>
             <p> Provide a first CIDR or a supernet and a list of subnet sizes (prefixes), the calculator will generate a list of subnet CIDRs</p>
             <p> Runs on client, no server-side execution, no data transfer, and no cookies. </p>
+            <p> The source code of this tool can be found <a href='https://github.com/ajcross/nextCIDR'>here</a>. Enhancements and bugs can be reported as GitHub issues. This tool is open-source under the <a href='https://www.gnu.org/licenses/gpl-3.0.html'>GPL-3.0 license</a>. </p>
             <div>
                 <Form>
                     <Form.Check
