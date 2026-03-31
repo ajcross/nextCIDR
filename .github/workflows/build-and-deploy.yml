@@ -17,6 +17,7 @@ jobs:
         run: | 
                 cd dir
                 npm install
+                npm test -- --watchAll=false --passWithNoTests
                 npm run build
 
       - name: Deploy 🚀
