@@ -1,15 +1,19 @@
-FROM node:20-alpine as build
+FROM node:20-alpine AS build
+
 WORKDIR /app
-COPY . /app
-RUN npm install
+
+COPY package*.json ./
+RUN npm ci
+
+COPY . .
 
 RUN npm test -- --watchAll=false --passWithNoTests
-
 RUN npm run build
 
-FROM docker.io/library/nginx:alpine
+FROM nginx:alpine
 
 COPY --from=build /app/build /usr/share/nginx/html
-EXPOSE 80
-CMD ["nginx", "-g", "daemon off;"]
 
+EXPOSE 80
+
+CMD ["nginx", "-g", "daemon off;"]
