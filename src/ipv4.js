@@ -38,20 +38,21 @@ class CIDR {
         } else if (this.ip % 2 ** (32 - this.prefix) !== 0) {
             // Invalid prefix for this IP
             // 1. find a valid prefix for this ip
-            let validprefix;
+            let validprefix=new CIDR(this.ip,CIDR.minValidPrefix(this.ip))
 
-            for (let p = parseInt(this.prefix, 10) + 1; p <= 32; p++) {
-                if (this.ip % 2 ** (32 - p) === 0) {
-                    validprefix = new CIDR(this.ip, p);
-                    break;
-                }
-            }
             // 2. find a valid ip for the prefix
             const validip = validprefix.supernet(this.prefix);
             throw (new Error(`Invalid prefix for this IP. Alternative CIDRs: ${validip.toString()} or ${validprefix.toString()}`));
         }
     }
-
+    static minValidPrefix(ip) {
+	let prefix;
+        for (let prefix = 0; prefix <= 32; prefix++) {
+            if (ip % 2 ** (32 - prefix) === 0) {
+                return prefix
+            }
+        }
+    }
     toString() {
         const ip = new IP(this.ip);
         let s = ip.toString();
@@ -84,12 +85,16 @@ class CIDR {
         return new CIDR(this.ip - mod, n);
     }
 
-    isSupernet(supercidr) {
-        if (supercidr.prefix > this.prefix) {
-            return false;
-        }
-        const s = this.supernet(supercidr.prefix);
-        return (s.ip === supercidr.ip);
+    containsSubnet(subnet) {
+        if (this.prefix > subnet.prefix) {
+	    return false;
+	}
+	const s = subnet.supernet(this.prefix);
+	return (s.ip == this.ip)
+    }
+    
+    containsIP(ip) {
+        return this.containsSubnet(new CIDR(ip, 32))
     }
 
     subnets(n) {

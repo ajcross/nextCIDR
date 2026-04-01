@@ -57,7 +57,7 @@ export function doTheMath(cidrtxt, prefixestxt, type) {
                 } else {
                     subnet = subnet.next(prefixes[i]);
                 }
-                if (type === 'supernet' && !subnet.isSupernet(cidr)) {
+                if (type === 'supernet' && !cidr.containsSubnet(subnet)) {
                     outof.push(subnet);
                 } else {
                     subnets.push(subnet);
@@ -68,7 +68,7 @@ export function doTheMath(cidrtxt, prefixestxt, type) {
                 let bigenough;
                 for (let i = Math.min(cidr.prefix - 1, outof[outof.length - 1].prefix); i >= 0; i--) {
                     bigenough = outof[outof.length - 1].supernet(i);
-                    if (cidr.isSupernet(bigenough)) {
+                    if (bigenough.containsSubnet(cidr)) {
                         break;
                     }
                 }
