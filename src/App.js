@@ -7,43 +7,14 @@ import Form from 'react-bootstrap/Form';
 import Alert from 'react-bootstrap/Alert';
 import ListGroup from 'react-bootstrap/ListGroup';
 import CIDR from './ipv4.js'
-
-class Prefixes {
-    constructor(prefixes) {
-        this.prefixes = prefixes;
-    }
-    parse(s) {
-        const regex = new RegExp("^[0-9]+(\\*[0-9]+)?$");
-        var pres = s.split(/[ ,]+/);
-        this.prefixes = [];
-        for (var i = 0; i < pres.length; i++) {
-            if (pres[i] !== "") {
-                const valid = regex.test(pres[i]);
-                if (!valid) {
-                    throw (new Error("Invalid prefix: " + pres[i]));;
-                }
-                const press = pres[i].split("*");
-                const p = parseInt(press[0], 10);
-                var mul = 1;
-                if (p > 32 || p < 0) {
-                    throw (new Error("Invalid prefix value, must be between 0 and 32"));
-                }
-                if (press.length === 2)
-                    mul = parseInt(press[1], 10);
-                for (var j = 0; j < mul; j++) {
-                    this.prefixes.push(p);
-                }
-            }
-        }
-    }
-}
+import { doTheMath } from './cidrCalc.js'
 
 function ErrorMessage({message, setCIDR}) {
     if (message) {
         const regex = new RegExp(CIDR.ipv4 + "/" + CIDR.prefix, "g");
         let result;
-        var i = 0;
-        var elements = [];
+        let i = 0;
+        let elements = [];
         while ((result = regex.exec(message)) !== null) {
             elements.push(message.substring(i, result.index));
             elements.push(
@@ -66,100 +37,12 @@ function ErrorMessage({message, setCIDR}) {
 }
 
 
-function doTheMath(cidrtxt, prefixestxt, type) {
-    var subnets = [];
-    var outof = [];
-    var freeoutof = [];
-    var prefixeserror = null;
-    var resulterror = null;
-    var cidrerror = null;
-    var avail = [];
-    var cidrs = {};
-    var cidr; 
-
-    var prefixes = new Prefixes();
-    try {
-        prefixes.parse(prefixestxt);
-    } catch (e) {
-        prefixeserror = e.message;
-    }
-
-    try {
-        cidr = CIDR.parse(cidrtxt);
-    } catch (e) {
-        cidrerror = e.message;
-    }
-    if (!cidrerror && prefixes.prefixes.length > 0) {
-        var i = 0;
-        var subnet = cidr;
-        try {
-            for (i = 0; i < prefixes.prefixes.length; i++) {
-                if (i === 0 && type === "supernet") {
-                    subnet = new CIDR(cidr.ip, 32).supernet(prefixes.prefixes[0]);
-                } else {
-                    subnet = subnet.next(prefixes.prefixes[i]);
-                }
-                if (type === "supernet" && !subnet.isSupernet(cidr)) {
-                    outof.push(subnet);
-                } else {
-                    subnets.push(subnet);
-                }
-            }
-            if (outof.length > 0) {
-                // find a supernet big enought for all the subnets
-                var bigenough;
-                for (i = Math.min(cidr.prefix - 1, outof[outof.length - 1].prefix); i >= 0; i--) {
-                    bigenough = outof[outof.length - 1].supernet(i);
-                    if (cidr.isSupernet(bigenough)) {
-                        break;
-                    }
-                }
-                resulterror = "no room on supernet for all subnets. You need at least /" + bigenough.prefix + " prefix, for example " + bigenough.toString();
-            }
-        } catch (e) {
-            resulterror = e.message;
-        }
-        if (subnets.length > 0) {
-            if (type === "first") {
-                avail = avail.concat(CIDR.diff(cidr, subnets[0]));
-            }
-            for (var j = 0; j < subnets.length - 1; j++) {
-                avail = avail.concat(CIDR.diff(subnets[j], subnets[j + 1]));
-            }
-            if (type === "supernet") {
-                var next;
-                try {
-                    next=cidr.next(32);
-                } catch (e) { // next went of range 
-                    next=null;
-                }
-                avail = avail.concat(CIDR.diff(subnets[subnets.length - 1], next));
-            }
-            if (outof.length > 0) {
-                freeoutof = CIDR.diff(cidr, outof[0]);
-                for (j = 0; j < outof.length - 1; j++) {
-                    freeoutof = freeoutof.concat(CIDR.diff(outof[j], outof[j + 1]));
-                }
-            }
-        }
-        cidrs = {
-            "free": avail,
-            "free-out-of": freeoutof,
-            "subnet": subnets,
-            "out-of": outof,
-            "in-use": type === "first" ? [cidr] : []
-        };
-    }
-    return [cidrs, cidrerror, prefixeserror, resulterror];
-}
-
-
 function SubnetList({subnets}) {
 
     if (subnets && subnets.length) {
-        var results;
-        var clipboardtxt = "";
-        var subnetslist = subnets.map((subnet) => (
+        let results;
+        let clipboardtxt = "";
+        let subnetslist = subnets.map((subnet) => (
             <ListGroup.Item key={subnet.toString()}> 
                 {subnet.toString()} 
                 <div>broadcast: {subnet.broadcast().toString()}</div>
@@ -167,12 +50,12 @@ function SubnetList({subnets}) {
             </ListGroup.Item>));
         clipboardtxt = subnets.reduce((s1, s2) => (s1 + "\n" + s2));
 
-        var resultslist =
+        let resultslist =
             <div className="mt-3">
                 Subnets:
                 <ListGroup> {subnetslist}</ListGroup>
             </div>;
-        var copybutton =
+        let copybutton =
             <Button  
                 className="mt-1"
                 variant="outline-primary"
@@ -187,14 +70,14 @@ function SubnetList({subnets}) {
 }
 function AppGridSquare({cidr, squareunit, cols, ip0}) {
 
-    var pos = (cidr.ip - ip0.ip) / 2 ** (32 - squareunit);
-    var units = 2 ** (squareunit - cidr.prefix);
-    var w = (units - 1) % cols + 1;
-    var h = Math.floor((units - 1) / cols);
-    var rowStart = Math.floor(pos / cols) + 1;
-    var rowEnd = "span " + (h + 1);
-    var colStart = pos % cols + 1;
-    var colEnd = "span " + (w);
+    const pos = (cidr.ip - ip0.ip) / 2 ** (32 - squareunit);
+    const units = 2 ** (squareunit - cidr.prefix);
+    const w = (units - 1) % cols + 1;
+    const h = Math.floor((units - 1) / cols);
+    const rowStart = Math.floor(pos / cols) + 1;
+    const rowEnd = "span " + (h + 1);
+    const colStart = pos % cols + 1;
+    const colEnd = "span " + (w);
     //console.log(cidr.toString()+ " pos "+ pos + " rowStart:"+rowStart+" rowEnd:"+rowEnd+" colStart: "+colStart+" colEnd: "+colEnd+ " "+cidr.type);
     const renderTooltip = (props) => (
         <Tooltip id="button-tooltip" {...props}>
@@ -222,10 +105,10 @@ function AppGridSquare({cidr, squareunit, cols, ip0}) {
 }
 
 function AppGrid({cidrsdict}) {
-    var logCols = 5; //needs to be a power of 2
+    const logCols = 5; //needs to be a power of 2
 
-    var cols = 2 ** logCols;
-    var cidrs = [];
+    const cols = 2 ** logCols;
+    let cidrs = [];
     // join the cidrs in a single array adding a type 
     for (const [key, value] of Object.entries(cidrsdict)) {
         cidrs = cidrs.concat(value.map((cidr) => {
@@ -238,10 +121,10 @@ function AppGrid({cidrsdict}) {
         return null;
     }
 
-    var maxprefix = cidrs.reduce((accumulador, cidr) => Math.max(accumulador, cidr.prefix), 0);
-    var minip = cidrs.reduce((accumulador, cidr) => Math.min(accumulador, cidr.ip), cidrs[0].ip);
-    var ip0 = new CIDR(minip, 32).supernet(Math.max(0, maxprefix - logCols));
-    var squares = cidrs.map((cidr) => 
+    const maxprefix = cidrs.reduce((accumulador, cidr) => Math.max(accumulador, cidr.prefix), 0);
+    const minip = cidrs.reduce((accumulador, cidr) => Math.min(accumulador, cidr.ip), cidrs[0].ip);
+    const ip0 = new CIDR(minip, 32).supernet(Math.max(0, maxprefix - logCols));
+    const squares = cidrs.map((cidr) => 
         <AppGridSquare 
             key={cidr}
             cidr={cidr} 
