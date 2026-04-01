@@ -44,6 +44,28 @@ test('CIDR.diff returns range between CIDRs', () => {
     );
 });
 
+test('CIDR.diff returns range between CIDRs', () => {
+    const cidr1 = CIDR.parse('10.0.1.0/24');
+    const cidr2 = CIDR.parse('10.0.4.0/24');
+    const diff = CIDR.diff(cidr1, cidr2).map(u => u.toString());
+    expect(diff).toEqual(
+        expect.arrayContaining([
+          '10.0.2.0/23'
+        ])
+    );
+});
+
+test('CIDR.diff returns range between CIDRs', () => {
+    const cidr1 = CIDR.parse('10.0.0.0/24');
+    const cidr2 = CIDR.parse('10.0.3.0/24');
+    const diff = CIDR.diff(cidr1, cidr2).map(u => u.toString());
+    expect(diff).toEqual(
+        expect.arrayContaining([
+          '10.0.1.0/24',
+          '10.0.2.0/24',
+        ])
+    );
+});
 test('CIDR.next returns a valid CIDR', () => {
     const cidr = CIDR.parse('10.0.1.0/32');
     const nextcidr = cidr.next(32);

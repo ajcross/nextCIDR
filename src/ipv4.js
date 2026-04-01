@@ -136,19 +136,20 @@ class CIDR {
         } else {
             ip2 = cidr2.ip;
         }
-
         if (ip1 >= ip2) {
             return [];
         }
         const n = [];
-        let d = ip2 - ip1;
-        let lb = Math.floor(logBase(2, d));
-        while (d > 0) {
-            ip2 = ip2 - 2 ** lb;
-            n.push(new CIDR(ip2, 32 - lb));
-            d = ip2 - ip1;
-            lb = Math.floor(logBase(2, d));
-        }
+	while (ip1 != ip2) { 
+	    let prefix = CIDR.minValidPrefix(ip1);
+	    let cidr;
+	    do {
+                cidr = new CIDR(ip1,prefix);
+	        prefix=prefix+1;
+	    } while( cidr.containsIP(ip2));
+	    n.push(cidr);
+            ip1 = cidr.next(32).ip;
+        }	
         return n;
     }
 }
