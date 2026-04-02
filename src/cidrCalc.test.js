@@ -1,11 +1,11 @@
 import { doTheMath, parsePrefixes } from './cidrCalc';
 
 test('parsePrefixes expands multipliers', () => {
-    expect(parsePrefixes('28*2, 26 24')).toEqual([28, 28, 26, 24]);
+    expect(parsePrefixes('28*2, 26, 24')).toEqual([28, 28, 26, 24]);
 });
 
 test('parsePrefixes rejects invalid prefixes', () => {
-    expect(() => parsePrefixes('33')).toThrow('Invalid prefix value');
+    expect(() => parsePrefixes('33')).toThrow("Invalid prefix \"33\". Must be an integer between 0 and 32.");
 });
 
 test('doTheMath returns subnets for supernet mode', () => {

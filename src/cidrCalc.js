@@ -1,27 +1,23 @@
 import CIDR from './ipv4.js';
+import { parse } from './parser/subnetsParser.js'
 
 const PREFIX_TOKEN_REGEX = /^[0-9]+(\*[0-9]+)?$/;
 
 export function parsePrefixes(text) {
-    const parts = text.split(/[ ,]+/);
-    const prefixes = [];
-
-    for (const part of parts) {
-        if (part !== '') {
-            if (!PREFIX_TOKEN_REGEX.test(part)) {
-                throw new Error(`Invalid prefix: ${part}`);
-            }
-            const [valueText, mulText] = part.split('*');
-            const prefix = parseInt(valueText, 10);
-            if (prefix > 32 || prefix < 0) {
-                throw new Error('Invalid prefix value, must be between 0 and 32');
-            }
-            const mul = mulText ? parseInt(mulText, 10) : 1;
-            for (let i = 0; i < mul; i++) {
-                prefixes.push(prefix);
-            }
-        }
-    }
+    const ast = parse(text);
+    const prefixes = ast.flatMap( node => {
+    
+    switch (node.type) {
+        case "plain":
+        case "slash":
+            return [ Number(node.value) ];
+        case "repeat":
+            return Array.from({ length: node.times }, () => (
+                Number(node.value)
+            ));
+        default:
+            throw new Error(`Node not supported: ${node.type}`);
+    }});
     return prefixes;
 }
 

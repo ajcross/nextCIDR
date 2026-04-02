@@ -10,6 +10,7 @@
     "@testing-library/user-event": "^13.5.0",
     "bootstrap": "^5.3.1",
     "gh-pages": "^3.2.3",
+    "peggy": "^5.1.0",
     "react": "^17.0.2",
     "react-bootstrap": "^2.8.0",
     "react-dom": "^17.0.2",
@@ -19,6 +20,11 @@
   },
   "scripts": {
     "start": "react-scripts start",
+    "generate:parser": "peggy --format es -o ./src/parser/subnetsParser.js ./src/parser/subnets.pegjs",
+
+    "prebuild": "npm run generate:parser",
+    "pretest": "npm run generate:parser",
+
     "build": "react-scripts build",
     "test": "react-scripts test",
     "eject": "react-scripts eject",
