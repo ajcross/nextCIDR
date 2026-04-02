@@ -1,6 +1,3 @@
-function logBase(x, y) {
-    return Math.log(y) / Math.log(x);
-}
 
 class IP {
     constructor(ip, prefix) {
@@ -46,7 +43,6 @@ class CIDR {
         }
     }
     static minValidPrefix(ip) {
-	let prefix;
         for (let prefix = 0; prefix <= 32; prefix++) {
             if (ip % 2 ** (32 - prefix) === 0) {
                 return prefix
@@ -90,7 +86,7 @@ class CIDR {
 	    return false;
 	}
 	const s = subnet.supernet(this.prefix);
-	return (s.ip == this.ip)
+	return (s.ip === this.ip)
     }
     
     containsIP(ip) {
@@ -140,7 +136,7 @@ class CIDR {
             return [];
         }
         const n = [];
-	while (ip1 != ip2) { 
+	while (ip1 !== ip2) { 
 	    let prefix = CIDR.minValidPrefix(ip1);
 	    let cidr;
 	    do {
