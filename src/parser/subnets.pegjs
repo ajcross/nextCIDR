@@ -4,14 +4,21 @@ start
     }
 
 item
-  = repeated
-  / slashPrefixed
-  / plain
+  = base:(repeated / slashPrefixed / plain) label:(_ quotedText)? {
+      if (label) {
+        return {
+          ...base,
+          label: label[1]
+        };
+      }
+      return base;
+    }
+
 
 repeated
   = value:prefix _ "*" _ times:positiveInteger {
       return {
-        type: "repeat",
+        type: "prefix",
         value,
         times
       };
@@ -20,16 +27,18 @@ repeated
 slashPrefixed
   = "/" value:prefix {
       return {
-        type: "slash",
-        value
+        type: "prefix",
+        value,
+        times: 1
       };
     }
 
 plain
   = value:prefix {
       return {
-        type: "plain",
-        value
+        type: "prefix",
+        value,
+        times: 1
       };
     }
 
@@ -58,6 +67,16 @@ positiveInteger
 
       return value;
     }
+
+quotedText
+  = "\"" chars:quotedChar* "\"" {
+      return chars.join("");
+    }
+
+quotedChar
+  = "\\\"" { return "\""; }
+  / "\\\\" { return "\\"; }
+  / [^"\\]
 
 _
   = [ \t\n\r]*

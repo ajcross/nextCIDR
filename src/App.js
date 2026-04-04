@@ -68,7 +68,7 @@ function SubnetList({subnets}) {
         return null;
     }
 }
-function AppGridSquare({cidr, squareunit, cols, ip0}) {
+function AppGridSquare({cidr, type, squareunit, cols, ip0}) {
 
     const pos = (cidr.ip - ip0.ip) / 2 ** (32 - squareunit);
     const units = 2 ** (squareunit - cidr.prefix);
@@ -78,10 +78,10 @@ function AppGridSquare({cidr, squareunit, cols, ip0}) {
     const rowEnd = "span " + (h + 1);
     const colStart = pos % cols + 1;
     const colEnd = "span " + (w);
-    //console.log(cidr.toString()+ " pos "+ pos + " rowStart:"+rowStart+" rowEnd:"+rowEnd+" colStart: "+colStart+" colEnd: "+colEnd+ " "+cidr.type);
+    //console.log(cidr.toString()+ " pos "+ pos + " rowStart:"+rowStart+" rowEnd:"+rowEnd+" colStart: "+colStart+" colEnd: "+colEnd+ " "+type);
     const renderTooltip = (props) => (
         <Tooltip id="button-tooltip" {...props}>
-            {cidr.type} {cidr.toString()}
+            {type} {cidr.toString()}
             <div>ip count: {cidr.ipCount().toString()}</div>
         </Tooltip>
     );
@@ -93,7 +93,7 @@ function AppGridSquare({cidr, squareunit, cols, ip0}) {
             overlay={renderTooltip}>
             <div
                 id={cidr.toString()}
-                className={cidr.type+' square'}
+                className={type+' square'}
                 style={{
                     gridRowStart: rowStart,
                     gridRowEnd: rowEnd,
@@ -104,30 +104,22 @@ function AppGridSquare({cidr, squareunit, cols, ip0}) {
     );
 }
 
-function AppGrid({cidrsdict}) {
-    const logCols = 5; //needs to be a power of 2
-
-    const cols = 2 ** logCols;
-    let cidrs = [];
-    // join the cidrs in a single array adding a type 
-    for (const [key, value] of Object.entries(cidrsdict)) {
-        cidrs = cidrs.concat(value.map((cidr) => {
-            cidr.type = key;
-            return cidr
-        }));
-    }
+function AppGrid({cidrs}) {
+    const logCols = 5; 
+    const cols = 2 ** logCols; //needs to be a power of 2
 
     if (cidrs.length === 0) {
         return null;
     }
 
-    const maxprefix = cidrs.reduce((accumulador, cidr) => Math.max(accumulador, cidr.prefix), 0);
-    const minip = cidrs.reduce((accumulador, cidr) => Math.min(accumulador, cidr.ip), cidrs[0].ip);
+    const maxprefix = cidrs.reduce((accumulador, cidr) => Math.max(accumulador, cidr.cidr.prefix), 0);
+    const minip = cidrs.reduce((accumulador, cidr) => Math.min(accumulador, cidr.cidr.ip), cidrs[0].cidr.ip);
     const ip0 = new CIDR(minip, 32).supernet(Math.max(0, maxprefix - logCols));
     const squares = cidrs.map((cidr) => 
         <AppGridSquare 
             key={cidr}
-            cidr={cidr} 
+            cidr={cidr.cidr}
+	    type={cidr.type}
             squareunit={maxprefix} 
             cols={cols} 
             ip0={ip0} /> 
@@ -139,9 +131,8 @@ function AppGrid({cidrsdict}) {
 function CIDRForm() {
     const [cidr, setCIDR] = useState("10.0.0.0/21");
     const [prefixes, setPrefixes] = useState("28*3, 26, 24, 23");
-    const [type, setType] = useState("supernet");
 
-    const [cidrs, cidrerror, prefixeserror, resulterror] = doTheMath(cidr,prefixes,type);
+    const [cidrs, cidrerror, prefixeserror, resulterror] = doTheMath(cidr,prefixes);
 
     return ( 
         <div className="container">
@@ -156,26 +147,6 @@ function CIDRForm() {
             <p> The source code of this tool can be found <a href='https://github.com/ajcross/nextCIDR'>here</a>. Enhancements and bugs can be reported as GitHub issues. This tool is open-source under the <a href='https://www.gnu.org/licenses/gpl-3.0.html'>GPL-3.0 license</a>. </p>
             <div>
                 <Form>
-                    <Form.Check
-                        value="first"
-                        id="first"
-                        label='start after'
-                        type='radio'
-                        inline
-                        checked={type==='first'} 
-                        onChange={e => setType(e.target.value)} 
-                        name="type" />
-
-                    <Form.Check
-                        value="supernet"
-                        id="supernet"
-                        label='supernet'
-                        type='radio'
-                        inline
-                        checked={type==='supernet'} 
-                        onChange={e => setType(e.target.value)} 
-                        name="type" />
-
                     <Form.Control
                         id="cidr" 
                         type="text" 
@@ -208,7 +179,7 @@ function CIDRForm() {
                     message={resulterror}
                     setCIDR={setCIDR} />
                 <AppGrid
-                    cidrsdict={cidrs} />
+                    cidrs={cidrs} />
                 <SubnetList
                     subnets={cidrs["subnet"]}/>
            </div>

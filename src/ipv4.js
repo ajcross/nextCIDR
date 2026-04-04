@@ -120,13 +120,20 @@ class CIDR {
     }
 
     static diff(cidr1, cidr2) {
+
         let ip1;
-        try {
-            ip1 = cidr1.next(32).ip;
-        } catch (e) {
-            return [];
+        if (cidr1 == null) {
+            ip1 = 0;
+        }
+        else {
+            try {
+                ip1 = cidr1.next(32).ip;
+            } catch (e) {
+                return [];
+            }
         }
         let ip2;
+
         if (cidr2 === null) {
             ip2 = 2 ** 32;
         } else {
@@ -148,6 +155,27 @@ class CIDR {
         }	
         return n;
     }
+    static head(supernet, subnet) {
+        let cidr1;
+	if (supernet.ip === 0) {
+            cidr1 = null;
+        }
+        else {
+            cidr1 = new CIDR(supernet.ip-1,32) ;
+        }
+        return CIDR.diff(cidr1, subnet);
+    }
+    static tail(supernet, subnet) {
+        let cidr2;
+        if (supernet.ip + supernet.ipCount() === 2**32-1) {
+            cidr2 = null;
+	}
+        else {
+            cidr2 = supernet.next(32);
+	}
+        return CIDR.diff(subnet, cidr2);
+    }
+
 }
 
 export default CIDR;
