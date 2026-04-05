@@ -38,17 +38,18 @@ function ErrorMessage({message, setCIDR}) {
 
 
 function SubnetList({subnets}) {
-
     if (subnets && subnets.length) {
         let results;
         let clipboardtxt = "";
         let subnetslist = subnets.map((subnet) => (
-            <ListGroup.Item key={subnet.toString()}> 
-                {subnet.toString()} 
-                <div>broadcast: {subnet.broadcast().toString()}</div>
-                <div>ip count: {subnet.ipCount().toString()}</div>
+            <ListGroup.Item key={subnet.cidr.toString()}>
+		{subnet.label}
+                <div>{subnet.cidr.toString()} </div>
+                <div>broadcast: {subnet.cidr.broadcast().toString()}</div>
+                <div>ip count: {subnet.cidr.ipCount().toString()}</div>
             </ListGroup.Item>));
-        clipboardtxt = subnets.reduce((s1, s2) => (s1 + "\n" + s2));
+        clipboardtxt = subnets.reduce((s1, s2) => (`${s1}\n${s2.label ? `${s2.label}: `: ""}${s2.cidr.toString()}`),
+				      clipboardtxt);
 
         let resultslist =
             <div className="mt-3">
@@ -68,7 +69,7 @@ function SubnetList({subnets}) {
         return null;
     }
 }
-function AppGridSquare({cidr, type, squareunit, cols, ip0}) {
+function AppGridSquare({cidr, type, squareunit, cols, ip0, label}) {
 
     const pos = (cidr.ip - ip0.ip) / 2 ** (32 - squareunit);
     const units = 2 ** (squareunit - cidr.prefix);
@@ -81,7 +82,8 @@ function AppGridSquare({cidr, type, squareunit, cols, ip0}) {
     //console.log(cidr.toString()+ " pos "+ pos + " rowStart:"+rowStart+" rowEnd:"+rowEnd+" colStart: "+colStart+" colEnd: "+colEnd+ " "+type);
     const renderTooltip = (props) => (
         <Tooltip id="button-tooltip" {...props}>
-            {type} {cidr.toString()}
+	    {label}
+            <div>{type} {cidr.toString()}</div>
             <div>ip count: {cidr.ipCount().toString()}</div>
         </Tooltip>
     );
@@ -122,7 +124,9 @@ function AppGrid({cidrs}) {
 	    type={cidr.type}
             squareunit={maxprefix} 
             cols={cols} 
-            ip0={ip0} /> 
+            ip0={ip0}
+	    {...(cidr.label !== undefined && { label: cidr.label })}
+	/> 
     );
         
     return <div className='grid'>{squares}</div>;
@@ -130,7 +134,7 @@ function AppGrid({cidrs}) {
 
 function CIDRForm() {
     const [cidr, setCIDR] = useState("10.0.0.0/21");
-    const [prefixes, setPrefixes] = useState("28*3, 26, 24, 23");
+    const [prefixes, setPrefixes] = useState('28*3, 26, 24 "trusted subnet" , 23 "untrusted subnet"');
 
     const [cidrs, cidrerror, prefixeserror, resulterror] = doTheMath(cidr,prefixes);
 
@@ -181,7 +185,7 @@ function CIDRForm() {
                 <AppGrid
                     cidrs={cidrs} />
                 <SubnetList
-                    subnets={cidrs["subnet"]}/>
+                    subnets={cidrs.filter((subnet) => subnet.type === "subnet")}/>
            </div>
        </div>);
 }

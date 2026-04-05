@@ -61,6 +61,21 @@ test('doTheMath returns subnets and free', () => {
     ]);
 });
 
+test('doTheMath return one subnet with label and two free', () => {
+    const [subnets, cidrerror, prefixeserror, resulterror] = doTheMath('10.0.0.0/25', '26 "twentysix"');
+    expect(cidrerror).toBeNull();
+    expect(prefixeserror).toBeNull();
+    expect(resulterror).toBeNull();
+    const r = subnets.map(u => ({
+	"cidr": u.cidr.toString(),
+	"type": u.type,
+	"label": u.label
+    }));
+
+    expect(r).toEqual([
+	{ "cidr": "10.0.0.0/26",  "type": "subnet" ,"label": "twentysix"},
+	{ "cidr": "10.0.0.64/26", "type": "free" },
+    ])});
 
 
 test('doTheMath surfaces CIDR parse errors', () => {

@@ -31,6 +31,7 @@ export function doTheMath(cidrtxt, prefixestxt) {
 	let subnet0;
 	let outof = false;
         let diff;
+	let type;
         try {
             for (let i = 0; i < prefixes.length; i++) {
                 for (let j = 0; j < prefixes[i].times; j++) {
@@ -46,24 +47,29 @@ export function doTheMath(cidrtxt, prefixestxt) {
                         diff = CIDR.diff(subnet0, subnet);
                     }
 		    // diff subnet subnet0 -> push con free o free out of
-		    for (let k = 0; k < diff.length; k++) {   
+		    for (let k = 0; k < diff.length; k++) {
                         if (cidr.containsSubnet(diff[k])) {
-                            subnets.push({ cidr: diff[k],
-			                   type: "free"});
-                        } else {
-                            subnets.push({ cidr: diff[k],
-			                   type: "free-out-of"});
-                        }
+			    type = "free";
+			}
+			else {
+			    type = "free-out-of";
+			}
+                        subnets.push({ cidr: diff[k],
+			               type: type});
                     }
 		    
                     if (cidr.containsSubnet(subnet)) {
-                        subnets.push({ cidr: subnet,   
-			               type: "subnet"});
-                    } else {
-			outof = true;
-                        subnets.push({ cidr: subnet,
-			               type: "out-of"});
-                    }
+			type = "subnet";
+		    }
+		    else {
+			type = "out-of";
+			outof = true
+		    }
+                    subnets.push({ cidr: subnet,   
+			           type: type,
+				   ... (prefixes[i].label !== undefined && { label: prefixes[i].label })
+				 });
+
 		    subnet0 = subnet;
                 }
             }
