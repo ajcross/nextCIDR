@@ -69,14 +69,28 @@ positiveInteger
     }
 
 quotedText
-  = "\"" chars:quotedChar* "\"" {
+  = doubleQuotedText
+  / singleQuotedText
+
+doubleQuotedText
+  = "\"" chars:doubleQuotedChar* "\"" {
       return chars.join("");
     }
 
-quotedChar
+singleQuotedText
+  = "'" chars:singleQuotedChar* "'" {
+      return chars.join("");
+    }
+
+doubleQuotedChar
   = "\\\"" { return "\""; }
   / "\\\\" { return "\\"; }
   / [^"\\]
+
+singleQuotedChar
+  = "\\'" { return "'"; }
+  / "\\\\" { return "\\"; }
+  / [^'\\]
 
 _
   = [ \t\n\r]*

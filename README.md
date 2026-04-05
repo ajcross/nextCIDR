@@ -2,7 +2,7 @@
 
 Just a CIDR calculator
 
-Provide a first CIDR or a supernet CIDR and a list of subnet sizes (prefixes), the calculator will generate a list of CIDRs for the subnets 
+Input a network CIDR and a list of subnet sizes (prefixes), the calculator will generate a list of CIDRs for the subnets 
 
 Runs on client, no server-side execution. 
 
