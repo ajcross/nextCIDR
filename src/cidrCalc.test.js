@@ -1,4 +1,5 @@
 import { doTheMath, parsePrefixes } from './cidrCalc';
+import { test, expect, describe } from 'vitest';
 
 test('parsePrefixes expands multipliers', () => {
     expect(parsePrefixes('28*2, 26, 24')).toEqual( [

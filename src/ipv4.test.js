@@ -1,4 +1,5 @@
 import CIDR from './ipv4';
+import { test, expect, describe } from 'vitest';
 
 test('CIDR.parse parses valid CIDR', () => {
     const cidr = CIDR.parse('10.0.0.0/24');
