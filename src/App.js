@@ -6,6 +6,8 @@ import Button from 'react-bootstrap/Button';
 import Form from 'react-bootstrap/Form';
 import Alert from 'react-bootstrap/Alert';
 import ListGroup from 'react-bootstrap/ListGroup';
+import Accordion from 'react-bootstrap/Accordion';
+import Container from 'react-bootstrap/Container';
 import CIDR from './ipv4.js'
 import { doTheMath } from './cidrCalc.js'
 
@@ -154,20 +156,26 @@ function CIDRForm() {
             <h1> 
                 <div className="align-top d-inline-block">
                     <i className="bi bi-calculator"></i> 
-                </div> <div className="align-bottom pt-2 d-inline-block">CIDR calculator </div>
+                </div> <div className="align-bottom pt-2 d-inline-block">Another CIDR calculator </div>
             </h1>
-            <p> Another CIDR calculator </p>
-            <p> Enter a network in CIDR format and a list of subnet sizes or CIDRs, the calculator will generate the list of subnets. </p>
-	    <p> Subnets can be specified by: </p>
-	    <ul> 
-		<li> Size (prefix): using a number, with or without forward slash '/', e.g: /24 </li>
-		<li> Multiplier: adding a multiplier to specify multple subnets of the same size, e.gg: /28*3 for three /28 subnes </li>
-		<li> Fixed subnet: using standard CIDR format, e.g: 172.23.10.0/24 </li>
-	    </ul>
-	    <p> A label can be added to each subnet using single or double quotes </p>
-	    <p> The order of the subnets is respected, no reordering is done. </p>	    
-            <p> Runs on client, no server-side execution, no data transfer, and no cookies. </p>
-            <p> The source code of this tool can be found <a href='https://github.com/ajcross/nextCIDR'>here</a>. Enhancements and bugs can be reported as GitHub issues. This tool is open-source under the <a href='https://www.gnu.org/licenses/gpl-3.0.html'>GPL-3.0 license</a>. </p>
+	    <Accordion>
+		<Accordion.Item eventKey="0">
+		    <Accordion.Header>Click here for instructions</Accordion.Header>
+		    <Accordion.Body>
+			<p> Enter a network in CIDR format and a list of subnet sizes or CIDRs, the calculator will generate the list of subnets. </p>
+			<p> Subnets can be specified by: </p>
+			<ul> 
+			    <li> Size (prefix): using a number, with or without forward slash '/', e.g: /24 </li>
+			    <li> Multiplier: adding a multiplier to specify multple subnets of the same size, e.gg: /28*3 for three /28 subnes </li>
+			    <li> Fixed subnet: using standard CIDR format, e.g: 172.23.10.0/24 </li>
+			</ul>
+			<p> A label can be added to each subnet using single or double quotes </p>
+			<p> The order of the subnets is respected, no reordering is done. </p>	    
+			<p> Runs on client, no server-side execution, no data transfer, and no cookies. </p>
+			<p> The source code of this tool can be found <a href='https://github.com/ajcross/nextCIDR'>here</a>. Enhancements and bugs can be reported as GitHub issues. This tool is open-source under the <a href='https://www.gnu.org/licenses/gpl-3.0.html'>GPL-3.0 license</a>. </p>
+		    </Accordion.Body>
+		</Accordion.Item>
+	    </Accordion>
             <div>
                 <Form>
 		    <Form.Label className="mb-0">Network:</Form.Label>
