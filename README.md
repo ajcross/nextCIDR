@@ -7,7 +7,7 @@ Enter a network in CIDR format and a list of subnet sizes or CIDRs, the calculat
 Subnets can be specified by:
 
 * Size (prefix): using a number, with or without forward slash '/', e.g: /24
-* Multiplier: adding a multiplier to specify multple subnets of the same size, e.gg: /28*3 for three /28 subnes
+* Multiplier: adding a multiplier to specify multple subnets of the same size, e.g: /28*3 for three /28 subnes
 * Fixed subnet: using standard CIDR format, e.g: 172.23.10.0/24
 
 A label can be added to each subnet using single or double quotes
