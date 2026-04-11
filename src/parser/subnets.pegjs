@@ -4,7 +4,7 @@ start
     }
 
 item
-  = base:(repeated / slashPrefixed / plain) label:(_ quotedText)? {
+  = base:( cidr / repeated / slashPrefixed / plain / cidr) label:(_ quotedText)? {
       if (label) {
         return {
           ...base,
@@ -29,7 +29,6 @@ slashPrefixed
       return {
         type: "prefix",
         value,
-        times: 1
       };
     }
 
@@ -38,9 +37,30 @@ plain
       return {
         type: "prefix",
         value,
-        times: 1
       };
     }
+
+cidr
+  = oct1:octet "." oct2:octet "." oct3:octet "." oct4:octet "/" prfx:prefix {
+      return {
+        type: "cidr",
+	value: `${oct1}.${oct2}.${oct3}.${oct4}/${prfx}`,
+      }
+    }
+
+octet
+  = digits:[0-9]+ {
+      const raw = digits.join("");
+      const value = Number(raw);
+
+      // Validate octet range (0–255)
+      if (!Number.isInteger(value) || value < 0 || value > 255) {
+        throw new Error(`Invalid "${raw}". Must be an integer between 0 and 255.`);
+      }
+
+      return String(value);
+    }
+
 
 prefix
   = digits:[0-9]+ {

@@ -73,7 +73,7 @@ class CIDR {
             }
             return new CIDR(ip, prefix);
         }
-        throw (new Error('Invalid CIDR syntax. Use a.b.c.d/n'));
+        throw (new Error(`Invalid CIDR syntax ${s}. Use a.b.c.d/n`));
     }
 
     supernet(n) {
@@ -118,6 +118,20 @@ class CIDR {
         const d = 2 ** (32 - this.prefix);
         return new IP(this.ip + d - 1);
     }
+    /**
+     * returns true if cidr1 goes after cidr2
+     * returns false otherwise: if goes before, or if it overlaps
+     */
+    static gt(cidr1, cidr2) {
+        return cidr1.ip >= cidr2.ip + cidr2.ipCount() ;
+    }
+    
+    /**
+     * returns a list of subnets between cidr1 and cidr2
+     * returns [] when they are contiguous, when overlap or when cidr2 is before cidr1
+     * if cidr1 is null, then diff is between 0.0.0.0 and cidr2
+     * if cidr2 is null, then diff is between cidr2 and 255.255.255.255
+     */
 
     static diff(cidr1, cidr2) {
 

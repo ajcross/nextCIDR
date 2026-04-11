@@ -28,25 +28,37 @@ export function doTheMath(cidrtxt, prefixestxt) {
     if (!cidrerror && prefixes.length > 0) {
 
         let subnet = cidr;
-	let subnet0;
+	let subnet0 = null;
 	let outof = false;
         let diff;
 	let type;
         try {
             for (let i = 0; i < prefixes.length; i++) {
-                for (let j = 0; j < prefixes[i].times; j++) {
+		let times=1;
+		if (prefixes[i].times !== undefined)
+		    times = prefixes[i].times;
+	    	    
+                for (let j = 0; j < times; j++) {
                     if (i === 0 && j === 0) {
-                        if (prefixes[0].value < cidr.prefix) {
-                            subnet = cidr.supernet(prefixes[0].value);
-                        } else {
-			    subnet = new CIDR(cidr.ip,prefixes[0].value);
+			if (prefixes[0].type === "cidr") {
+			    subnet = CIDR.parse(prefixes[0].value);
+			} else {
+			    if (prefixes[0].value < cidr.prefix) {
+				subnet = cidr.supernet(prefixes[0].value);
+                            } else {
+				subnet = new CIDR(cidr.ip , prefixes[0].value);
+			    }
 			}
                         diff = CIDR.head(cidr, subnet);
                     } else {
-                        subnet = subnet0.next(prefixes[i].value);
+			if (prefixes[i].type === "cidr") {
+			    subnet = CIDR.parse(prefixes[i].value);
+			}
+			else {
+                            subnet = subnet0.next(prefixes[i].value);
+			}
                         diff = CIDR.diff(subnet0, subnet);
                     }
-		    // diff subnet subnet0 -> push con free o free out of
 		    for (let k = 0; k < diff.length; k++) {
                         if (cidr.containsSubnet(diff[k])) {
 			    type = "free";
@@ -57,18 +69,33 @@ export function doTheMath(cidrtxt, prefixestxt) {
                         subnets.push({ cidr: diff[k],
 			               type: type});
                     }
-		    
-                    if (cidr.containsSubnet(subnet)) {
-			type = "subnet";
+
+		    if (prefixes[i].type === "cidr") {
+			if (!cidr.containsSubnet(subnet)) {
+			    outof = true;
+			    type = "in-use-out-of";
+			} else  if (subnet0 === null || CIDR.gt(subnet,subnet0)) {
+			    type = "in-use";
+			}
+			else {
+			    type = "out-of-order";
+			    resulterror = `unable to place ${subnet.toString()} in the specified order.`;
+			}
 		    }
 		    else {
-			type = "out-of";
-			outof = true
+			if (cidr.containsSubnet(subnet)) {
+			    type = "subnet";
+			}
+			else {
+			    outof = true;
+			    type = "out-of";
+			}
 		    }
+
                     subnets.push({ cidr: subnet,   
-			           type: type,
-				   ... (prefixes[i].label !== undefined && { label: prefixes[i].label })
-				 });
+                                   type: type,
+                                   ...(prefixes[i].label !== undefined && { label: prefixes[i].label })
+                                });
 
 		    subnet0 = subnet;
                 }
@@ -81,10 +108,10 @@ export function doTheMath(cidrtxt, prefixestxt) {
 			           type: "free"});
 		}
 	    }
-            else {
-                // find a supernet big enought for all the subnets
+            else if ( resulterror === null ) { // no error so far
+		// find a supernet big enought for all the subnets
                 let bigenough;
-		const lastsubnet = subnets[subnets.length -1].cidr;
+                const lastsubnet = subnets[subnets.length -1].cidr;
                 for (let i = Math.min(cidr.prefix - 1, lastsubnet.prefix); i >= 0; i--) {
                     bigenough = lastsubnet.supernet(i);
                     if (bigenough.containsSubnet(cidr)) {
@@ -93,8 +120,8 @@ export function doTheMath(cidrtxt, prefixestxt) {
                 }
                 resulterror = `no room on supernet for all subnets. You need at least /${bigenough.prefix} prefix, for example ${bigenough.toString()}`;
             }
-
 	} catch (e) {
+	    console.log(e)
             resulterror = e.message;
 	}
     }

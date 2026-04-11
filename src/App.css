@@ -5,6 +5,14 @@ div.free {
 div.in-use {
 	background-color: black;
 }
+div.in-use-out-of {
+	background-color: red;
+}
+
+div.out-of-order {
+	background-color: red;
+}
+
 div.subnet {
 	background-color: blue;
 }
@@ -20,3 +28,6 @@ div.grid {
 	grid-auto-columns: 9px;
 	grid-auto-rows: 9px;
 }
+
+
+    

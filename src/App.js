@@ -11,6 +11,17 @@ import { doTheMath } from './cidrCalc.js'
 
 function ErrorMessage({message, setCIDR}) {
     if (message) {
+        return <Alert variant="danger"
+                   className="mt-1">
+                   {message}
+                </Alert>;
+    } else {
+        return null;
+    }
+}
+
+function CIDRErrorMessage({message, setCIDR}) {
+    if (message) {
         const regex = new RegExp(CIDR.ipv4 + "/" + CIDR.prefix, "g");
         let result;
         let i = 0;
@@ -145,12 +156,21 @@ function CIDRForm() {
                     <i className="bi bi-calculator"></i> 
                 </div> <div className="align-bottom pt-2 d-inline-block">CIDR calculator </div>
             </h1>
-            <p> Just a CIDR calculator </p>
-            <p> Input a network CIDR and a list of subnet sizes (prefixes), the calculator will generate a list of subnet CIDRs</p>
+            <p> Another CIDR calculator </p>
+            <p> Enter a network in CIDR format and a list of subnet sizes or CIDRs, the calculator will generate the list of subnets. </p>
+	    <p> Subnets can be specified by: </p>
+	    <ul> 
+		<li> Size (prefix): using a number, with or without forward slash '/', e.g: /24 </li>
+		<li> Multiplier: adding a multiplier to specify multple subnets of the same size, e.gg: /28*3 for three /28 subnes </li>
+		<li> Fixed subnet: using standard CIDR format, e.g: 172.23.10.0/24 </li>
+	    </ul>
+	    <p> A label can be added to each subnet using single or double quotes </p>
+	    <p> The order of the subnets is respected, no reordering is done. </p>	    
             <p> Runs on client, no server-side execution, no data transfer, and no cookies. </p>
             <p> The source code of this tool can be found <a href='https://github.com/ajcross/nextCIDR'>here</a>. Enhancements and bugs can be reported as GitHub issues. This tool is open-source under the <a href='https://www.gnu.org/licenses/gpl-3.0.html'>GPL-3.0 license</a>. </p>
             <div>
                 <Form>
+		    <Form.Label className="mb-0">Network:</Form.Label>
                     <Form.Control
                         id="cidr" 
                         type="text" 
@@ -158,14 +178,14 @@ function CIDRForm() {
                         value={cidr}
                         onChange={e => setCIDR(e.target.value)} 
                         autoComplete="off" />
-                    <ErrorMessage 
+                    <CIDRErrorMessage 
                         message={cidrerror}
                         setCIDR={setCIDR} />
                 </Form>
 
                 <div className="mb-3 mt-2">
                     <Form.Group>
-                        <Form.Label className="mb-0">Prefixes:</Form.Label>
+                        <Form.Label className="mb-0">Subnets:</Form.Label>
                         <Form.Control
                             id="prefixes" 
                             type="text" 
