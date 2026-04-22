@@ -44,6 +44,7 @@
     "gh-pages": "^6.3.0",
     "peggy": "^5.1.0",
     "react": "^19.2.5",
-    "react-bootstrap": "^2.10.10"
+    "react-bootstrap": "^2.10.10",
+    "react-router-dom": "^7.14.1"
   }
 }

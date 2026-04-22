@@ -1,4 +1,3 @@
-import React, {useState} from 'react';
 import './App.css'
 import Tooltip from 'react-bootstrap/Tooltip';
 import OverlayTrigger from 'react-bootstrap/OverlayTrigger';
@@ -9,8 +8,13 @@ import ListGroup from 'react-bootstrap/ListGroup';
 import Accordion from 'react-bootstrap/Accordion';
 import CIDR from './ipv4.js'
 import { doTheMath } from './cidrCalc.js'
+import { useSearchParams } from "react-router-dom";
+import { BrowserRouter } from "react-router-dom";
+import { useEffect, useState } from "react";
 
-function ErrorMessage({message, setCIDR}) {
+
+
+function ErrorMessage({message}) {
     if (message) {
         return <Alert variant="danger"
                    className="mt-1">
@@ -21,7 +25,7 @@ function ErrorMessage({message, setCIDR}) {
     }
 }
 
-function CIDRErrorMessage({message, setCIDR}) {
+function CIDRErrorMessage({message, setNetwork}) {
     if (message) {
         const regex = new RegExp(CIDR.ipv4 + "/" + CIDR.prefix, "g");
         let result;
@@ -33,7 +37,7 @@ function CIDRErrorMessage({message, setCIDR}) {
                 <Alert.Link 
                     href='#' 
                     key={result[0]}
-                    onClick={(e) => setCIDR(e.target.innerHTML)}> 
+                    onClick={(e) => setNetwork(e.target.innerHTML)}> 
                     {result[0]}
                 </Alert.Link>);
             i = regex.lastIndex;
@@ -144,11 +148,48 @@ function AppGrid({cidrs}) {
     return <div className='grid'>{squares}</div>;
 }
 
-function CIDRForm() {
-    const [cidr, setCIDR] = useState("10.0.0.0/21");
-    const [prefixes, setPrefixes] = useState('28*3, 26, 24 "trusted subnet" , 23 "untrusted subnet"');
+const DEFAULT_NETWORK="10.0.0.0/21";
+const DEFAULT_SUBNETS='28*3, 26, 24 "trusted subnet" , 23 "untrusted subnet"';
 
-    const [cidrs, cidrerror, prefixeserror, resulterror] = doTheMath(cidr,prefixes);
+function CIDRForm() {
+    
+    const [searchParams, setSearchParams] = useSearchParams();
+    let initial_network, initial_subnets;
+    if ( !searchParams.has("network") && !searchParams.has("subnets")) {
+        initial_network = DEFAULT_NETWORK;
+        initial_subnets = DEFAULT_SUBNETS;
+    } else {
+        initial_network = searchParams.get("network") ?? "";
+        initial_subnets = searchParams.get("subnets") ?? ""
+    }
+    const [network, setNetwork] = useState(initial_network);
+    const [subnets, setSubnets] = useState(initial_subnets);
+
+    function commitNetwork(value) {
+	const next = new URLSearchParams(searchParams);
+	next.set("network", value);
+	setSearchParams(next, { replace: true});
+    }
+
+    function commitSubnets(value) {
+	const next = new URLSearchParams(searchParams);
+	next.set("subnets", value);
+	setSearchParams(next, { replace: true});
+    }
+
+    function updateField(name, value) {
+        setSearchParams((prev) => {
+            const next = new URLSearchParams(prev);
+
+            if (value) next.set(name, value);
+            else next.delete(name);
+
+            return next;
+        }, { replace: true });
+    }
+
+    const [cidrs, cidrerror, prefixeserror, resulterror] = doTheMath(network,subnets);
+    
 
     return ( 
         <div className="container">
@@ -182,12 +223,13 @@ function CIDRForm() {
                         id="cidr" 
                         type="text" 
                         name="cidr"
-                        value={cidr}
-                        onChange={e => setCIDR(e.target.value)} 
+                        value={network}
+                        onChange={e => setNetwork(e.target.value)}
+			onBlur={() => commitNetwork(network)}
                         autoComplete="off" />
                     <CIDRErrorMessage 
                         message={cidrerror}
-                        setCIDR={setCIDR} />
+                        setNetwork={e => setNetwork(e)} />
                 </Form>
 
                 <div className="mb-3 mt-2">
@@ -196,19 +238,18 @@ function CIDRForm() {
                         <Form.Control
                             id="prefixes" 
                             type="text" 
-                            value={prefixes}
+                            value={subnets}
                             name="prefixes" 
-                            onChange={e => setPrefixes(e.target.value)}
+                            onChange={e => setSubnets(e.target.value)}
+			    onBlur={() => commitSubnets(subnets)}
                             autoComplete="off" />
                     </Form.Group>
                     <ErrorMessage 
-                        message={prefixeserror}
-                        setCIDR={setCIDR} />
+                        message={prefixeserror} />
                 </div>
 
                 <ErrorMessage 
-                    message={resulterror}
-                    setCIDR={setCIDR} />
+                    message={resulterror} />
                 <AppGrid
                     cidrs={cidrs} />
                 <SubnetList
@@ -220,7 +261,9 @@ function CIDRForm() {
 // ========================================
 
 const App = () => (
-    <CIDRForm />
+    <BrowserRouter>
+        <CIDRForm />
+    </BrowserRouter>
 );
 
 export default App;
