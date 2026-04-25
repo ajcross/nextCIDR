@@ -4,7 +4,6 @@ import OverlayTrigger from 'react-bootstrap/OverlayTrigger';
 import Button from 'react-bootstrap/Button';
 import Form from 'react-bootstrap/Form';
 import Alert from 'react-bootstrap/Alert';
-import ListGroup from 'react-bootstrap/ListGroup';
 import Accordion from 'react-bootstrap/Accordion';
 import CIDR from './ipv4.js'
 import { doTheMath } from './cidrCalc.js'
@@ -72,33 +71,46 @@ function SubnetList({subnets}) {
 
 
     let checks = <Form>
+		     <div className="d-flex mt-3">
                      {types.map((type) => (
 
-                     <Form.Check
-                         type="checkbox"
-                         label={type}
-			 value={type}
-			 checked={selected.includes(type)}
-			 onChange={handleChange}
-		     />))}
+			 <Form.Check
+			     className="ms-2"
+                             type="checkbox"
+                             label={type}
+			     value={type}
+			     checked={selected.includes(type)}
+			     onChange={handleChange}
+			 />))}
+		     </div>
 		 </Form>;
     subnets=subnets.filter((subnet) => selected.includes(subnet.type));
     if (subnets && subnets.length) {
         let results;
         let clipboardtxt = "";
         let subnetslist = subnets.map((subnet) => (
-            <ListGroup.Item key={subnet.cidr.toString()}>
-		{subnet.label}
-                <div>{subnet.cidr.toString()} </div>
-                <div>broadcast: {subnet.cidr.broadcast().toString()}</div>
-                <div>ip count: {subnet.cidr.ipCount().toString()}</div>
-            </ListGroup.Item>));
+	    <Accordion.Item eventKey={subnet.cidr.toString()} className="compact-accordion">
+		<Accordion.Header className="p-0">
+		    <div className="d-flex">
+			<div
+			    className={subnet.type+" dot"}
+			/>
+			<div className="ms-2">
+			    {subnet.cidr.toString()} {subnet.label}
+			</div>
+		    </div>
+		</Accordion.Header>
+		<Accordion.Body>
+		    <div>broadcast: {subnet.cidr.broadcast().toString()}</div>
+		    <div>ip count: {subnet.cidr.ipCount().toString()}</div>
+		</Accordion.Body>
+	    </Accordion.Item>));
         clipboardtxt = subnets.reduce((s1, s2) => (`${s1}\n${s2.label ? `${s2.label}: `: ""}${s2.cidr.toString()}`),
 				      clipboardtxt);
 
         let resultslist =
             <div className="mt-3">
-                <ListGroup> {subnetslist}</ListGroup>
+		<Accordion alwaysOpen>{subnetslist}</Accordion>
             </div>;
         let copybutton =
             <Button  
@@ -138,7 +150,7 @@ function AppGridSquare({cidr, type, squareunit, cols, ip0, label}) {
             overlay={renderTooltip}>
             <div
                 id={cidr.toString()}
-                className={type+' square'}
+                className={type}
                 style={{
                     gridRowStart: rowStart,
                     gridRowEnd: rowEnd,

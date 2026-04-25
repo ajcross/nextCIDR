@@ -29,5 +29,10 @@ div.grid {
 	grid-auto-rows: 9px;
 }
 
+div.dot {
+    width: 9px;
+}
 
-    
+.compact-accordion .accordion-button {
+    padding: 4px 2px;
+}
