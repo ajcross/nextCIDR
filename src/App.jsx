@@ -51,9 +51,6 @@ function CIDRErrorMessage({message, setNetwork}) {
     }
 }
 
-
-
-//const TYPES = ["free","in-use","in-use-out-of","out-of-order","subnet","out-of","free-out-of"];
 function SubnetList({subnets}) {
     const types = [...new Set(subnets.map(item => item.type))];
     console.log(types);
@@ -102,7 +99,9 @@ function SubnetList({subnets}) {
 		</Accordion.Header>
 		<Accordion.Body>
 		    <div>broadcast: {subnet.cidr.broadcast().toString()}</div>
+		    <div>netmask: {subnet.cidr.netmask().toString()}</div>
 		    <div>ip count: {subnet.cidr.ipCount().toString()}</div>
+		    
 		</Accordion.Body>
 	    </Accordion.Item>));
         clipboardtxt = subnets.reduce((s1, s2) => (`${s1}\n${s2.label ? `${s2.label}: `: ""}${s2.cidr.toString()}`),

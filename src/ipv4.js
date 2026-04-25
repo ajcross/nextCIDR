@@ -115,8 +115,15 @@ class CIDR {
     }
 
     broadcast() {
-        const d = 2 ** (32 - this.prefix);
-        return new IP(this.ip + d - 1);
+        return new IP(this.ip -1 + this.ipCount());
+    }
+
+    netmask() {
+	const prefix=Number(this.prefix);
+	if (prefix===0)
+	    return new IP(0);
+	return new IP((0xFFFFFFFF << (32 - prefix)) >>> 0);
+		      
     }
     /**
      * returns true if cidr1 goes after cidr2

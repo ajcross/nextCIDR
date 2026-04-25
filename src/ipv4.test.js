@@ -25,6 +25,21 @@ test('CIDR.broadcast returns last IP', () => {
     expect(cidr.broadcast().toString()).toBe('10.0.0.255');
 });
 
+test('CIDR.netmask /24', () => {
+    const cidr = CIDR.parse('10.0.0.0/24');
+    expect(cidr.netmask().toString()).toBe('255.255.255.0');
+});
+
+test('CIDR.netmask /32', () => {
+    const cidr = CIDR.parse('10.0.0.0/32');
+    expect(cidr.netmask().toString()).toBe('255.255.255.255');
+});
+
+test('CIDR.netmask /0', () => {
+    const cidr = CIDR.parse('0.0.0.0/0');
+    expect(cidr.netmask().toString()).toBe('0.0.0.0');
+});
+
 test('CIDR.diff returns range between CIDRs', () => {
     const cidr1 = CIDR.parse('10.0.0.0/24');
     const cidr2 = CIDR.parse('10.0.1.0/24');
