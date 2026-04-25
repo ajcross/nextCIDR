@@ -29,6 +29,18 @@ test('parsePrefixes 28*2, 12.21.10.0/32', () => {
             "value": "12.21.10.0/32",
         }])});
 
+test('parsePrefixes /28*2, 12.21.10.0/32', () => {
+    expect(parsePrefixes('/28*2, 12.21.10.0/32')).toEqual( [
+        {
+            "times": 2,
+            "type": "prefix",
+            "value": "28",
+        },
+        {
+            "type": "cidr",
+            "value": "12.21.10.0/32",
+        }])});
+
 
 test('parsePrefixes rejects invalid prefixes', () => {
     expect(() => parsePrefixes('33')).toThrow("Invalid prefix \"33\". Must be an integer between 0 and 32.");

@@ -4,7 +4,7 @@ start
     }
 
 item
-  = base:( cidr / repeated / slashPrefixed / plain / cidr) label:(_ quotedText)? {
+  = base:( cidr / repeated / slashPrefixed / cidr) label:(_ quotedText)? {
       if (label) {
         return {
           ...base,
@@ -16,7 +16,7 @@ item
 
 
 repeated
-  = value:prefix _ "*" _ times:positiveInteger {
+  = "/"? value:prefix _ "*" _ times:positiveInteger {
       return {
         type: "prefix",
         value,
@@ -25,15 +25,7 @@ repeated
     }
 
 slashPrefixed
-  = "/" value:prefix {
-      return {
-        type: "prefix",
-        value,
-      };
-    }
-
-plain
-  = value:prefix {
+  = "/"? value:prefix {
       return {
         type: "prefix",
         value,
