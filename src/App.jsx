@@ -54,8 +54,10 @@ function CIDRErrorMessage({message, setNetwork}) {
 
 
 
-const TYPES = ["free","in-use","in-use-out-of","out-of-order","subnet","out-of","free-out-of"];
+//const TYPES = ["free","in-use","in-use-out-of","out-of-order","subnet","out-of","free-out-of"];
 function SubnetList({subnets}) {
+    const types = [...new Set(subnets.map(item => item.type))];
+    console.log(types);
 
     const [selected, setSelected] = useState(["subnet"]);
     const handleChange = (e) => {
@@ -70,7 +72,7 @@ function SubnetList({subnets}) {
 
 
     let checks = <Form>
-                     {TYPES.map((type) => (
+                     {types.map((type) => (
 
                      <Form.Check
                          type="checkbox"
