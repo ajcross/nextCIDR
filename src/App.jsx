@@ -53,7 +53,34 @@ function CIDRErrorMessage({message, setNetwork}) {
 }
 
 
+
+const TYPES = ["free","in-use","in-use-out-of","out-of-order","subnet","out-of","free-out-of"];
 function SubnetList({subnets}) {
+
+    const [selected, setSelected] = useState(["subnet"]);
+    const handleChange = (e) => {
+	const { value, checked } = e.target;
+
+	if (checked) {
+	    setSelected((prev) => [...prev, value]);
+	} else {
+	    setSelected((prev) => prev.filter((item) => item !== value));
+	}
+    };
+
+
+    let checks = <Form>
+                     {TYPES.map((type) => (
+
+                     <Form.Check
+                         type="checkbox"
+                         label={type}
+			 value={type}
+			 checked={selected.includes(type)}
+			 onChange={handleChange}
+		     />))}
+		 </Form>;
+    subnets=subnets.filter((subnet) => selected.includes(subnet.type));
     if (subnets && subnets.length) {
         let results;
         let clipboardtxt = "";
@@ -69,7 +96,6 @@ function SubnetList({subnets}) {
 
         let resultslist =
             <div className="mt-3">
-                Subnets:
                 <ListGroup> {subnetslist}</ListGroup>
             </div>;
         let copybutton =
@@ -79,10 +105,9 @@ function SubnetList({subnets}) {
                 onClick={() => navigator.clipboard.writeText(clipboardtxt)}>
                 <i className="bi bi-clipboard align-top"/> Copy
             </Button>;
-        results = <>{resultslist}{copybutton}</>;
-        return results;
+        return <>{checks}{copybutton}{resultslist}</>;
     } else {
-        return null;
+        return <>{checks}</>;
     }
 }
 function AppGridSquare({cidr, type, squareunit, cols, ip0, label}) {
@@ -252,8 +277,10 @@ function CIDRForm() {
                     message={resulterror} />
                 <AppGrid
                     cidrs={cidrs} />
+
                 <SubnetList
-                    subnets={cidrs.filter((subnet) => subnet.type === "subnet")}/>
+                    subnets={cidrs}
+		    />
            </div>
        </div>);
 }
