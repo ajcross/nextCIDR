@@ -2,14 +2,14 @@
 div.free {
 	background-color: lightgray;
 }
-div.in-use {
+div.static {
 	background-color: black;
 }
-div.in-use-out-of {
+div.static-out-of {
 	background-color: red;
 }
 
-div.out-of-order {
+div.static-relocated {
 	background-color: red;
 }
 

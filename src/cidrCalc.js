@@ -11,9 +11,10 @@ export function doTheMath(cidrtxt, prefixestxt) {
     let prefixeserror = null;
     let resulterror = null;
     let cidrerror = null;
-    let cidr;
+    let network;
     let prefixes = [];
-
+    let cidr;
+    
     try {
         prefixes = parsePrefixes(prefixestxt);
     } catch (e) {
@@ -21,17 +22,18 @@ export function doTheMath(cidrtxt, prefixestxt) {
     }
 
     try {
-        cidr = CIDR.parse(cidrtxt);
+        network = CIDR.parse(cidrtxt);
     } catch (e) {
         cidrerror = e.message;
     }
     if (!cidrerror && prefixes.length > 0) {
 
-        let subnet = cidr;
+        let subnet = network;
 	let subnet0 = null;
 	let outof = false;
         let diff;
 	let type;
+	   
         try {
             for (let i = 0; i < prefixes.length; i++) {
 		let times=1;
@@ -41,26 +43,32 @@ export function doTheMath(cidrtxt, prefixestxt) {
                 for (let j = 0; j < times; j++) {
                     if (i === 0 && j === 0) {
 			if (prefixes[0].type === "cidr") {
-			    subnet = CIDR.parse(prefixes[0].value);
+			    subnet = cidr = CIDR.parse(prefixes[0].value);
 			} else {
-			    if (prefixes[0].value < cidr.prefix) {
-				subnet = cidr.supernet(prefixes[0].value);
+			    if (prefixes[0].value < network.prefix) {
+				subnet = network.supernet(prefixes[0].value);
                             } else {
-				subnet = new CIDR(cidr.ip , prefixes[0].value);
+				subnet = new CIDR(network.ip , prefixes[0].value);
 			    }
 			}
-                        diff = CIDR.head(cidr, subnet);
+                        diff = CIDR.head(network, subnet);
                     } else {
 			if (prefixes[i].type === "cidr") {
-			    subnet = CIDR.parse(prefixes[i].value);
+			    cidr = CIDR.parse(prefixes[i].value);
+			    if ( !CIDR.gt (cidr, subnet0)) {
+				subnet = subnet0.next(cidr.prefix);
+			    }
+			    else {
+				subnet = cidr;
+			    }
 			}
 			else {
-                            subnet = subnet0.next(prefixes[i].value);
+			    subnet = subnet0.next(prefixes[i].value);
 			}
                         diff = CIDR.diff(subnet0, subnet);
-                    }
+		    }
 		    for (let k = 0; k < diff.length; k++) {
-                        if (cidr.containsSubnet(diff[k])) {
+                        if (network.containsSubnet(diff[k])) {
 			    type = "free";
 			}
 			else {
@@ -69,21 +77,20 @@ export function doTheMath(cidrtxt, prefixestxt) {
                         subnets.push({ cidr: diff[k],
 			               type: type});
                     }
-
+		    
 		    if (prefixes[i].type === "cidr") {
-			if (!cidr.containsSubnet(subnet)) {
+			if ( cidr !== subnet ) { //!CIDR.equals(cidr, subnet) ) {
+			    type = "static-relocated";
+			    resulterror = `unable to place ${cidr.toString()} in the specified order. Relocated to ${subnet.toString()}`;
+			} else if (!network.containsSubnet(subnet)) {
 			    outof = true;
-			    type = "in-use-out-of";
-			} else  if (subnet0 === null || CIDR.gt(subnet,subnet0)) {
-			    type = "in-use";
-			}
-			else {
-			    type = "out-of-order";
-			    resulterror = `unable to place ${subnet.toString()} in the specified order.`;
+			    type = "static-out-of";
+			} else {
+			    type = "static";
 			}
 		    }
 		    else {
-			if (cidr.containsSubnet(subnet)) {
+			if (network.containsSubnet(subnet)) {
 			    type = "subnet";
 			}
 			else {
@@ -101,7 +108,7 @@ export function doTheMath(cidrtxt, prefixestxt) {
                 }
             }
 	    if (!outof) {
-		let diff = CIDR.tail(cidr, subnet);
+		let diff = CIDR.tail(network, subnet);
 		
 		for (let k = 0; k < diff.length; k++) {   
                     subnets.push({ cidr: diff[k],
@@ -112,9 +119,9 @@ export function doTheMath(cidrtxt, prefixestxt) {
 		// find a supernet big enought for all the subnets
                 let bigenough;
                 const lastsubnet = subnets[subnets.length -1].cidr;
-                for (let i = Math.min(cidr.prefix - 1, lastsubnet.prefix); i >= 0; i--) {
+                for (let i = Math.min(network.prefix - 1, lastsubnet.prefix); i >= 0; i--) {
                     bigenough = lastsubnet.supernet(i);
-                    if (bigenough.containsSubnet(cidr)) {
+                    if (bigenough.containsSubnet(network)) {
                         break;
                     }
                 }

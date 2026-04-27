@@ -151,7 +151,7 @@ test('doTheMath "10.0.0.0/22" "10.0.1.0/24"', () => {
 
     expect(r).toEqual([
 	{ "cidr": "10.0.0.0/24",  "type": "free" },
-	{ "cidr": "10.0.1.0/24",  "type": "in-use" },
+	{ "cidr": "10.0.1.0/24",  "type": "static" },
 	{ "cidr": "10.0.2.0/23",  "type": "free" },
     ]);
 });
@@ -173,16 +173,16 @@ test('doTheMath "10.0.0.0/22" "28, 10.0.1.0/24"', () => {
 	{ "cidr": "10.0.0.32/27",  "type": "free" },
 	{ "cidr": "10.0.0.64/26",  "type": "free" },
 	{ "cidr": "10.0.0.128/25",  "type": "free" },
-	{ "cidr": "10.0.1.0/24",  "type": "in-use" },
+	{ "cidr": "10.0.1.0/24",  "type": "static" },
 	{ "cidr": "10.0.2.0/23",  "type": "free" },
     ]);
 });
 
-test('doTheMath() out of order: "10.0.0.0/22" "28, 10.0.0.0/24 "fixed" "', () => {
+test('doTheMath() relocate: "10.0.0.0/22" "28, 10.0.0.0/24 "fixed" "', () => {
     const [subnets, cidrerror, prefixeserror, resulterror] = doTheMath('10.0.0.0/22', '28, 10.0.0.0/24 "fixed"');
     expect(cidrerror).toBeNull();
     expect(prefixeserror).toBeNull();
-    expect(resulterror).toMatch("unable to place 10.0.0.0/24 in the specified order");
+    expect(resulterror).toMatch("unable to place 10.0.0.0/24 in the specified order. Relocated to 10.0.1.0/24");
     const r = subnets.map(u => ({
 	"cidr": u.cidr.toString(),
 	"type": u.type,
@@ -191,8 +191,30 @@ test('doTheMath() out of order: "10.0.0.0/22" "28, 10.0.0.0/24 "fixed" "', () =>
 
     expect(r).toEqual([
 	{ "cidr": "10.0.0.0/28",  "type": "subnet" },
-	{ "cidr": "10.0.0.0/24",  "type": "out-of-order", "label": "fixed" },
-	{ "cidr": "10.0.1.0/24",  "type": "free"  },
+	{ "cidr": "10.0.0.16/28",  "type": "free" },
+	{ "cidr": "10.0.0.32/27",  "type": "free" },
+	{ "cidr": "10.0.0.64/26",  "type": "free" },
+	{ "cidr": "10.0.0.128/25",  "type": "free" },
+	{ "cidr": "10.0.1.0/24",  "type": "static-relocated", "label": "fixed"  },
 	{ "cidr": "10.0.2.0/23",  "type": "free" }
+    ]);
+});
+
+
+test('doTheMath() static-out-of: "10.0.1.0/24" " 10.0.3.0/24 "fixed" "', () => {
+    const [subnets, cidrerror, prefixeserror, resulterror] = doTheMath('10.0.1.0/24', '10.0.3.0/24 "fixed"');
+    expect(cidrerror).toBeNull();
+    expect(prefixeserror).toBeNull();
+    expect(resulterror).toMatch("no room on supernet for all subnets. You need at least /22 prefix, for example 10.0.0.0/22");
+    const r = subnets.map(u => ({
+	"cidr": u.cidr.toString(),
+	"type": u.type,
+	"label": u.label,
+    }));
+
+    expect(r).toEqual([
+	{ "cidr": "10.0.1.0/24",  "type": "free" },
+	{ "cidr": "10.0.2.0/24",  "type": "free-out-of" },
+	{ "cidr": "10.0.3.0/24",  "type": "static-out-of" , "label": "fixed"},
     ]);
 });
