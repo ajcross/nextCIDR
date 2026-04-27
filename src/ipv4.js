@@ -42,6 +42,9 @@ class CIDR {
             throw (new Error(`Invalid prefix for this IP. Alternative CIDRs: ${validip.toString()} or ${validprefix.toString()}`));
         }
     }
+    static equals( cidr1, cidr2 ) {
+	return cidr1.ip === cidr2.ip && cidr1.prefix === cidr2.prefix;
+    }
     static minValidPrefix(ip) {
         for (let prefix = 0; prefix <= 32; prefix++) {
             if (ip % 2 ** (32 - prefix) === 0) {
