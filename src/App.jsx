@@ -187,7 +187,7 @@ function AppGrid({cidrs}) {
 }
 
 const DEFAULT_NETWORK="10.0.0.0/21";
-const DEFAULT_SUBNETS='28*3, 26, 24 "trusted subnet" , 23 "untrusted subnet"';
+const DEFAULT_SUBNETS='28*3, 26, 24 "trusted" , 23 "untrusted", 10.0.5.0/25';
 
 function CIDRForm() {
     
