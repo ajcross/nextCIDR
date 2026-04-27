@@ -247,10 +247,11 @@ function CIDRForm() {
 			    <li> Multiplier: adding a multiplier to specify multple subnets of the same size, e.gg: /28*3 for three /28 subnes </li>
 			    <li> Fixed subnet: using standard CIDR format, e.g: 172.23.10.0/24 </li>
 			</ul>
-			<p> A label can be added to each subnet using single or double quotes </p>
-			<p> The order of the subnets is respected, no reordering is done. </p>	    
-			<p> Runs on client, no server-side execution, no data transfer, and no cookies. </p>
-			<p> The source code of this tool can be found <a href='https://github.com/ajcross/nextCIDR'>here</a>. Enhancements and bugs can be reported as GitHub issues. This tool is open-source under the <a href='https://www.gnu.org/licenses/gpl-3.0.html'>GPL-3.0 license</a>. </p>
+			<p> CIDRs must be specified using the network IP.</p>
+			<p> A label can be added to each subnet using single or double quotes.</p>
+			<p> The order of the subnets is respected, no reordering is done.</p>	    
+			<p> Runs on client, no server-side execution, no data transfer, and no cookies.</p>
+			<p> The source code of this tool can be found <a href='https://github.com/ajcross/nextCIDR'>here</a>. Enhancements and bugs can be reported as GitHub issues. This tool is open-source under the <a href='https://www.gnu.org/licenses/gpl-3.0.html'>GPL-3.0 license</a>.</p>
 		    </Accordion.Body>
 		</Accordion.Item>
 	    </Accordion>
