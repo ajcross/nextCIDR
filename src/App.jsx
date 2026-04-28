@@ -68,11 +68,11 @@ function SubnetList({subnets}) {
 
 
     let checks = <Form>
-		     <div className="d-flex mt-3">
+		     <div className="d-flex flex-wrap mt-3">
                      {types.map((type) => (
 
 			 <Form.Check
-			     className="ms-2"
+			     className="ms-3"
                              type="checkbox"
                              label={type}
 			     value={type}
