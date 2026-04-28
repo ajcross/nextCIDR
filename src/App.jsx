@@ -98,6 +98,7 @@ function SubnetList({subnets}) {
 		    </div>
 		</Accordion.Header>
 		<Accordion.Body>
+		    <div>{subnet.type}</div>
 		    <div>broadcast: {subnet.cidr.broadcast().toString()}</div>
 		    <div>netmask: {subnet.cidr.netmask().toString()}</div>
 		    <div>ip count: {subnet.cidr.ipCount().toString()}</div>
