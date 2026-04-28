@@ -80,8 +80,8 @@ export function doTheMath(cidrtxt, prefixestxt) {
 		    
 		    if (prefixes[i].type === "cidr") {
 			if ( cidr !== subnet ) { //!CIDR.equals(cidr, subnet) ) {
-			    type = "static-relocated";
-			    resulterror = `unable to place ${cidr.toString()} in the specified order. Relocated to ${subnet.toString()}`;
+			    type = "relocated";
+			    resulterror = `unable to place ${cidr.toString()}, relocated to ${subnet.toString()}`;
 			} else if (!network.containsSubnet(subnet)) {
 			    outof = true;
 			    type = "static-out-of";

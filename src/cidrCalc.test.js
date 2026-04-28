@@ -182,7 +182,7 @@ test('doTheMath() relocate: "10.0.0.0/22" "28, 10.0.0.0/24 "fixed" "', () => {
     const [subnets, cidrerror, prefixeserror, resulterror] = doTheMath('10.0.0.0/22', '28, 10.0.0.0/24 "fixed"');
     expect(cidrerror).toBeNull();
     expect(prefixeserror).toBeNull();
-    expect(resulterror).toMatch("unable to place 10.0.0.0/24 in the specified order. Relocated to 10.0.1.0/24");
+    expect(resulterror).toMatch("unable to place 10.0.0.0/24, relocated to 10.0.1.0/24");
     const r = subnets.map(u => ({
 	"cidr": u.cidr.toString(),
 	"type": u.type,
@@ -195,7 +195,7 @@ test('doTheMath() relocate: "10.0.0.0/22" "28, 10.0.0.0/24 "fixed" "', () => {
 	{ "cidr": "10.0.0.32/27",  "type": "free" },
 	{ "cidr": "10.0.0.64/26",  "type": "free" },
 	{ "cidr": "10.0.0.128/25",  "type": "free" },
-	{ "cidr": "10.0.1.0/24",  "type": "static-relocated", "label": "fixed"  },
+	{ "cidr": "10.0.1.0/24",  "type": "relocated", "label": "fixed"  },
 	{ "cidr": "10.0.2.0/23",  "type": "free" }
     ]);
 });
